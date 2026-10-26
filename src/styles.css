@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --sky-soft: #cbe5f8;
+    --sky-mid: #e3f1fb;
+    --sky-light: #f5faff;
+    --text-primary: #0f1c2e;
+    --text-secondary: #3b526d;
+    --text-muted: #64748b;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.85);
+    --glass-shadow: 0 10px 32px 0 rgba(28, 54, 88, 0.08);
+  }
+
+  body {
+    background-color: #e9f4fc;
+    color: var(--text-primary);
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+}
+
+/* Editorial Serif Typography */
+.font-editorial {
+  font-family: "Italiana", "Cinzel", "Cormorant Garamond", Georgia, serif;
+}
+
+.font-editorial-serif {
+  font-family: "Cinzel", "Italiana", Georgia, serif;
+}
+
+.font-editorial-body {
+  font-family: "Cormorant Garamond", Georgia, serif;
+}
+
+/* Sky Ambient Canvas Background (Matching user reference) */
+.sky-ambient-bg {
+  background:
+    radial-gradient(ellipse 90% 80% at 20% 15%, rgba(182, 222, 248, 0.75) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 70% at 85% 85%, rgba(195, 227, 251, 0.7) 0%, transparent 60%),
+    radial-gradient(circle 600px at 50% 40%, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.4) 100%),
+    linear-gradient(145deg, #cde6f9 0%, #e2f0fb 40%, #f6faff 70%, #d4eaf8 100%);
+}
+
+/* Editorial Name Wordmark */
+.editorial-wordmark {
+  letter-spacing: 0.06em;
+  line-height: 0.9;
+  text-shadow: 0 4px 20px rgba(180, 205, 230, 0.4);
+}
+
+/* Minimal Modern Frosted Glass Navigation Pill */
+.dock-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #3b526d;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.dock-pill:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 1);
+  color: #0f1c2e;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(25, 55, 95, 0.09), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.dock-pill.active {
+  background: #0f1c2e;
+  border: 1px solid rgba(15, 28, 46, 0.9);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(15, 28, 46, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.dock-pill.active::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 28%;
+  right: 28%;
+  height: 2px;
+  background: #3b82f6;
+  border-radius: 9999px;
+  filter: blur(0.5px);
+}
+
+/* Frosted Glass Action Circle Button */
+.action-circle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  color: #1e334d;
+  box-shadow: 0 6px 20px rgba(28, 55, 90, 0.07), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-circle-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #ffffff;
+  color: #0c1827;
+  box-shadow: 0 10px 28px rgba(28, 55, 90, 0.12), inset 0 1px 2px rgba(255, 255, 255, 1);
+}
+
+/* Frosted Card Container */
+.frosted-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 20px 50px rgba(20, 50, 85, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Sunset Theme (Skills Section - Palette: #EA6113, #F88F22, #FBB931, #FFE3B3) */
+.sunset-screen-bg {
+  background-color: #6da792;
+  background-image:
+    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(173, 142, 80, 0.45) 0%, transparent 65%),
+    radial-gradient(ellipse 85% 75% at 85% 85%, rgba(235, 91, 8, 0.5) 0%, transparent 60%),
+    radial-gradient(circle 800px at 50% 35%, rgba(193, 148, 72, 0.22) 0%, transparent 70%);
+}
+
+.sunset-category-box {
+  background-color: #d5a84e;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 227, 179, 0.55);
+  box-shadow: 0 12px 32px rgba(180, 60, 0, 0.18), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sunset-category-box:hover {
+  transform: translateY(-6px);
+  border-color: #FFE3B3;
+  box-shadow: 0 22px 50px rgba(180, 60, 0, 0.28), 0 0 25px rgba(251, 185, 49, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.sunset-skill-card {
+  background-color: #c0894d;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 227, 179, 0.45);
+  color: #FFE3B3;
+  box-shadow: 0 6px 18px rgba(160, 50, 0, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.sunset-skill-card:hover {
+  transform: translateY(-4px) scale(1.025);
+  background-color: #EA6113;
+  border-color: #FFE3B3;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(160, 45, 0, 0.32), 0 0 14px rgba(255, 227, 179, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.sunset-skill-card:active {
+  transform: translateY(-1px) scale(0.98);
+}
