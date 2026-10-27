@@ -36,6 +36,26 @@
   font-family: "Cormorant Garamond", Georgia, serif;
 }
 
+/* Wide Futuristic Display Font (Matching "OUR WORKS" reference pattern) */
+.font-syne {
+  font-family: "Syne", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.font-expanded {
+  font-family: "Syne", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Warm Editorial Espresso Backdrop (Matching User Reference Image) */
+.certificates-screen-bg {
+  background-color: #0d0a08;
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% 10%, rgba(138, 92, 58, 0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 75% 65% at 20% 85%, rgba(94, 60, 36, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 60% at 85% 75%, rgba(120, 75, 42, 0.2) 0%, transparent 65%),
+    linear-gradient(180deg, #16110e 0%, #0d0a08 60%, #080605 100%);
+}
+
 /* Sky Ambient Canvas Background (Matching user reference) */
 .sky-ambient-bg {
   background:

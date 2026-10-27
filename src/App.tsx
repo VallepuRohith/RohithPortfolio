@@ -38,7 +38,13 @@ export function App() {
   return (
     <div
       className={`relative min-h-screen w-full ${
-        activeTab === "skills" ? "sunset-screen-bg" : "sky-ambient-bg"
+        activeTab === "skills"
+          ? "sunset-screen-bg"
+          : activeTab === "projects"
+          ? "h-screen max-h-screen overflow-hidden bg-slate-950"
+          : activeTab === "certifications"
+          ? "h-screen max-h-screen overflow-hidden certificates-screen-bg text-white"
+          : "sky-ambient-bg"
       } text-[#0f1c2e] overflow-x-hidden selection:bg-[#FFE3B3] selection:text-[#EA6113]`}
     >
       {/* Top action buttons: LinkedIn, GitHub, Resume */}
@@ -46,6 +52,7 @@ export function App() {
         linkedInUrl="https://www.linkedin.com/in/vallepu-rohith"
         githubUrl="https://github.com/VallepuRohith"
         resumeUrl="/resume.pdf"
+        isDark={activeTab === "projects" || activeTab === "certifications"}
       />
 
       {/* Main View Area: Home Hero or Section Screen */}

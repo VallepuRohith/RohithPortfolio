@@ -1,6 +1,7 @@
 import React from "react";
 import { NavTab } from "./NavigationDock";
 import { ProjectsSection } from "./ProjectsSection";
+import { CertificatesSection } from "./CertificatesSection";
 import {
   Code2,
   Briefcase,
@@ -180,6 +181,11 @@ export const SectionView: React.FC<SectionViewProps> = ({
   // Dedicated 3D Spatial Coverflow View for PROJECTS
   if (tab === "projects") {
     return <ProjectsSection onBackToHome={onBackToHome} />;
+  }
+
+  // Dedicated 3D Curved Perspective Carousel View for CERTIFICATIONS (Matching Reference Image)
+  if (tab === "certifications") {
+    return <CertificatesSection onBackToHome={onBackToHome} />;
   }
 
   const meta = sectionConfig[tab];

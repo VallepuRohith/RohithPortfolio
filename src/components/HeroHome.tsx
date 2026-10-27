@@ -39,7 +39,7 @@ export const HeroHome: React.FC = () => {
         </div>
 
         {/* Central Hero Figure: Rohith Editorial Cutout */}
-        <div className="relative z-15 h-full flex items-end justify-center pb-36 sm:pb-38 lg:pb-40 pointer-events-none">
+        <div className="relative z-15 h-full flex items-end justify-center pb-36 sm:pb-38 lg:pb-40  pointer-events-none">
           <img
             src={rohithEditorial}
             alt="Vallepu Rohith — Editorial Portrait"
