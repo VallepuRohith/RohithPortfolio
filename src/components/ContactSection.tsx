@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import houseImg from "../assets/contact-house.jpg";
 import { NavTab } from "./NavigationDock";
-import { time } from "console";
 
 interface ContactSectionProps {
   onBackToHome: () => void;
@@ -41,36 +40,34 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
   const [isBlackout, setIsBlackout] = useState(false);
   const [houseReached, setHouseReached] = useState(false);
 
-  // Car Position & Orientation
+  // Car Visibility and Headlights State (Position & Orientation handled directly on DOM ref for 60/120fps)
   const [carState, setCarState] = useState<{
-    x: number;
-    y: number;
-    angle: number;
     visible: boolean;
     scale: number;
     headlightsOn: boolean;
   }>({
-    x: 0,
-    y: 0,
-    angle: -90,
     visible: false,
     scale: 0,
     headlightsOn: false,
   });
 
-  // Trail particles behind car
-  const [trail, setTrail] = useState<Array<{ id: number; x: number; y: number }>>([]);
-
-  // DOM Refs for dynamic path anchoring
+  // DOM Refs for dynamic road anchoring
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const sendButtonRef = useRef<HTMLButtonElement>(null);
   const houseImageRef = useRef<HTMLDivElement>(null);
+  const addressBlockRef = useRef<HTMLDivElement>(null);
   const phoneBlockRef = useRef<HTMLDivElement>(null);
   const emailBlockRef = useRef<HTMLDivElement>(null);
 
-  // Invisible SVG path element ref for interpolation
+  // SVG Refs for high-speed calculation & GPU trail rendering
   const hiddenPathRef = useRef<SVGPathElement>(null);
+  const trailPathRef = useRef<SVGPathElement>(null);
+  const carElRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
+
+  // Rotational damping refs for buttery-smooth cornering
+  const smoothedAngleRef = useRef<number>(0);
+  const isFirstTickRef = useRef<boolean>(true);
 
   // Update clock every second
   useEffect(() => {
@@ -120,7 +117,32 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
   };
 
-  // Build the SVG path string matching the user's blue arrow drawing
+  // Convert an array of 2D waypoints into a C1/C2 continuous cubic Bezier SVG path
+  const catmullRomToBezier = (pts: Array<{ x: number; y: number }>, tension = 0.72) => {
+    if (pts.length < 2) return "";
+    if (pts.length === 2) {
+      return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`;
+    }
+    const p = [pts[0], ...pts, pts[pts.length - 1]];
+    let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 1; i < p.length - 2; i++) {
+      const p0 = p[i - 1];
+      const p1 = p[i];
+      const p2 = p[i + 1];
+      const p3 = p[i + 2];
+
+      const cp1x = p1.x + (p2.x - p0.x) * (tension / 3);
+      const cp1y = p1.y + (p2.y - p0.y) * (tension / 3);
+
+      const cp2x = p2.x - (p3.x - p1.x) * (tension / 3);
+      const cp2y = p2.y - (p3.y - p1.y) * (tension / 3);
+
+      d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    }
+    return d;
+  };
+
+  // Build the redesigned road SVG path matching the user's analyzed hand-drawn curve
   const generatePathString = useCallback(() => {
     if (
       !cardContainerRef.current ||
@@ -135,45 +157,108 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     const houseRect = houseImageRef.current.getBoundingClientRect();
     const phoneRect = phoneBlockRef.current?.getBoundingClientRect();
     const emailRect = emailBlockRef.current?.getBoundingClientRect();
+    const addressRect = addressBlockRef.current?.getBoundingClientRect();
 
-    // Start point: Center of Send Button
-    const startX = sendRect.left - containerRect.left + sendRect.width / 2;
-    const startY = sendRect.top - containerRect.top + sendRect.height / 2;
+    // Start point: Departure On-Ramp at Send Button
+    const p0 = {
+      x: sendRect.left - containerRect.left + sendRect.width * 0.45,
+      y: sendRect.top - containerRect.top + sendRect.height * 0.5,
+    };
 
-    // End point: Center of House Image
-    const endX = houseRect.left - containerRect.left + houseRect.width / 2;
-    const endY = houseRect.top - containerRect.top + houseRect.height / 2;
+    // End point: Arrival Bay at House Image
+    const p6 = {
+      x: houseRect.left - containerRect.left + houseRect.width * 0.48,
+      y: houseRect.top - containerRect.top + houseRect.height * 0.6,
+    };
 
-    // Anchor points based on Phone and Email blocks
-    const phoneX = phoneRect
-      ? phoneRect.left - containerRect.left + phoneRect.width / 2
-      : startX - 80;
-    const phoneY = phoneRect
-      ? phoneRect.top - containerRect.top + phoneRect.height / 2
-      : (startY + endY) / 2;
+    // Dynamic Element Coordinates relative to container
+    const emailRight = emailRect
+      ? emailRect.right - containerRect.left
+      : p0.x + 120;
+    const emailLeft = emailRect
+      ? emailRect.left - containerRect.left
+      : p0.x + 20;
+    const emailTop = emailRect
+      ? emailRect.top - containerRect.top
+      : p0.y - 180;
+    const emailBottom = emailRect
+      ? emailRect.bottom - containerRect.top
+      : p0.y - 120;
 
-    const emailX = emailRect
-      ? emailRect.left - containerRect.left + emailRect.width / 2
-      : startX + 60;
-    const emailY = emailRect
-      ? emailRect.top - containerRect.top + emailRect.height / 2
-      : (startY + endY) / 2;
+    const phoneLeft = phoneRect
+      ? phoneRect.left - containerRect.left
+      : (p6.x + p0.x) * 0.5;
+    const phoneRight = phoneRect
+      ? phoneRect.right - containerRect.left
+      : (p6.x + p0.x) * 0.5 + 80;
+    const phoneTop = phoneRect
+      ? phoneRect.top - containerRect.top
+      : emailTop;
+    const phoneBottom = phoneRect
+      ? phoneRect.bottom - containerRect.top
+      : emailBottom;
 
-    // S-curve matching the user's blue path:
-    // 1. Starts at Send button, goes upwards slightly right of the input group:
-    const waypoint1X = startX + 15;
-    const waypoint1Y = startY - (startY - emailY) * 0.45;
+    const addressLeft = addressRect
+      ? addressRect.left - containerRect.left
+      : p6.x - 40;
+    const addressRight = addressRect
+      ? addressRect.right - containerRect.left
+      : p6.x + 120;
+    const addressBottom = addressRect
+      ? addressRect.bottom - containerRect.top
+      : emailBottom;
 
-    // 2. Passes up between Phone and Email columns:
-    const gapX = (phoneX + emailX) / 2 + 10;
-    const gapY = (phoneY + emailY) / 2 + 15;
+    // Detect if layout is vertically stacked (e.g. mobile viewports)
+    const isStacked =
+      emailRect &&
+      phoneRect &&
+      emailRect.top > phoneRect.bottom + 5;
 
-    // 3. Loops around Phone to the left:
-    const leftLoopX = phoneX - 35;
-    const leftLoopY = phoneY - 10;
+    if (isStacked) {
+      const mobileWaypoints = [
+        p0,
+        { x: p0.x + 40, y: p0.y - (p0.y - emailBottom) * 0.3 },
+        { x: (p0.x + p6.x) / 2 + 50, y: (p0.y + p6.y) * 0.65 },
+        { x: (p0.x + p6.x) / 2 - 40, y: (p0.y + p6.y) * 0.4 },
+        { x: p6.x - 25, y: p6.y + 50 },
+        p6,
+      ];
+      return catmullRomToBezier(mobileWaypoints, 0.7);
+    }
 
-    // 4. Curves up and right toward the House image beside Contacts:
-    return `M ${startX} ${startY} C ${waypoint1X} ${waypoint1Y + 40}, ${emailX + 30} ${gapY + 45}, ${gapX} ${gapY} C ${gapX - 25} ${gapY - 45}, ${phoneX + 25} ${leftLoopY + 40}, ${leftLoopX} ${leftLoopY} C ${leftLoopX - 25} ${leftLoopY - 40}, ${endX - 35} ${endY + 45}, ${endX} ${endY}`;
+    // Desktop 3-column Layout (Mathematically fitted to user's analyzed drawing):
+    // 1. P1: Curves rightwards leaving Send button, heading past outer right of Email
+    const p1 = {
+      x: Math.max(p0.x + 75, emailRight - 15),
+      y: p0.y - (p0.y - emailBottom) * 0.35 + 8,
+    };
+
+    // 2. P2: Loops up along the outer right flank of the Email card
+    const p2 = {
+      x: emailRight + 45,
+      y: emailTop + (emailBottom - emailTop) * 0.4,
+    };
+
+    // 3. P3: High crest arching smoothly above Email and Phone
+    const p3 = {
+      x: (emailLeft + phoneRight) / 2 + 10,
+      y: Math.min(emailTop, phoneTop) - 45,
+    };
+
+    // 4. P4: Smooth diagonal chute passing through the open gap between Phone and Address
+    const p4 = {
+      x: (phoneLeft + addressRight) / 2,
+      y: (phoneTop + phoneBottom) / 2 + 12,
+    };
+
+    // 5. P5: Smooth trough dipping under the Address card
+    const p5 = {
+      x: (addressLeft + addressRight) / 2 + 20,
+      y: addressBottom + 40,
+    };
+
+    const waypoints = [p0, p1, p2, p3, p4, p5, p6];
+    return catmullRomToBezier(waypoints, 0.72);
   }, []);
 
   // Trigger Send Button and initiate Car Travel
@@ -210,101 +295,122 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     setFormErrors({});
   };
 
-  // Execute the car journey animation
+  // Execute the car journey animation with rotational damping & GPU acceleration
   const startCarJourney = () => {
-    if (!cardContainerRef.current || !sendButtonRef.current || !houseImageRef.current)
+    if (
+      !cardContainerRef.current ||
+      !sendButtonRef.current ||
+      !houseImageRef.current
+    )
       return;
+
+    const pathEl = hiddenPathRef.current;
+    if (!pathEl) return;
+
+    const totalLength = pathEl.getTotalLength();
+    if (!totalLength) return;
 
     setIsDriving(true);
     setHouseReached(false);
-    setTrail([]);
 
-    const containerRect = cardContainerRef.current.getBoundingClientRect();
-    const sendRect = sendButtonRef.current.getBoundingClientRect();
-    const startX = sendRect.left - containerRect.left + sendRect.width / 2;
-    const startY = sendRect.top - containerRect.top + sendRect.height / 2;
+    // Compute initial departure angle at start point
+    const sampleWindow = 14;
+    const startPt = pathEl.getPointAtLength(0);
+    const nextPt = pathEl.getPointAtLength(
+      Math.min(totalLength, sampleWindow * 2)
+    );
+    const initialAngle =
+      (Math.atan2(nextPt.y - startPt.y, nextPt.x - startPt.x) * 180) / Math.PI;
 
-    // Step 1: Car pops up at the Send button location
+    smoothedAngleRef.current = initialAngle;
+    isFirstTickRef.current = true;
+
+    // Reset trail
+    if (trailPathRef.current) {
+      trailPathRef.current.style.strokeDasharray = `0 ${totalLength}`;
+      trailPathRef.current.style.strokeDashoffset = "0";
+    }
+
+    // Step 1: Car pops up at Send button facing initial road departure heading
     setCarState({
-      x: startX,
-      y: startY,
-      angle: -90,
       visible: true,
       scale: 0,
       headlightsOn: true,
     });
 
-    // Pop scale animation: 0 -> 1 over 250ms
+    if (carElRef.current) {
+      carElRef.current.style.transform = `translate3d(${startPt.x}px, ${startPt.y}px, 0) translate(-50%, -50%) rotate(${initialAngle + 90}deg) scale(0)`;
+    }
+
+    // Pop scale animation: 0 -> 1 over 200ms
     setTimeout(() => {
       setCarState((prev) => ({ ...prev, scale: 1 }));
-    }, 50);
+      if (carElRef.current) {
+        carElRef.current.style.transform = `translate3d(${startPt.x}px, ${startPt.y}px, 0) translate(-50%, -50%) rotate(${initialAngle + 90}deg) scale(1)`;
+      }
+    }, 40);
 
     // After car pops in, start driving along path
     setTimeout(() => {
-      const pathEl = hiddenPathRef.current;
-      if (!pathEl) {
-        setIsDriving(false);
-        return;
-      }
-
-      const totalLength = pathEl.getTotalLength();
-      if (!totalLength) {
-        setIsDriving(false);
-        return;
-      }
-
-      const durationMs = 5000; // 3 seconds smooth driving along curve
+      const durationMs = 4800; // 4.8 seconds smooth driving
       let startTime: number | null = null;
-      let particleCounter = 0;
 
       const driveStep = (timestamp: number) => {
         if (!startTime) startTime = timestamp;
         const elapsed = timestamp - startTime;
         const progress = Math.min(1, elapsed / durationMs);
 
-        // Smooth ease-in-out easing
-        const easedProgress =
-          progress < 0.5
-            ? 2 * progress * progress
-            : -1 + (4 - 2 * progress) * progress;
+        // Quintic smoothstep easing for zero acceleration jerk:
+        const eased =
+          6 * Math.pow(progress, 5) -
+          15 * Math.pow(progress, 4) +
+          10 * Math.pow(progress, 3);
 
-        const currentDist = easedProgress * totalLength;
+        const currentDist = eased * totalLength;
         const point = pathEl.getPointAtLength(currentDist);
 
-        // Compute tangent angle for realistic car rotation
-        const deltaDist = 3;
-        const prevPt = pathEl.getPointAtLength(Math.max(0, currentDist - deltaDist));
-        const nextPt = pathEl.getPointAtLength(
-          Math.min(totalLength, currentDist + deltaDist)
+        // Anti-jitter tangent window across vehicle wheelbase
+        const prev = pathEl.getPointAtLength(
+          Math.max(0, currentDist - sampleWindow)
         );
-        const rad = Math.atan2(nextPt.y - prevPt.y, nextPt.x - prevPt.x);
-        const angleDeg = (rad * 180) / Math.PI;
+        const next = pathEl.getPointAtLength(
+          Math.min(totalLength, currentDist + sampleWindow)
+        );
+        const targetDeg =
+          (Math.atan2(next.y - prev.y, next.x - prev.x) * 180) / Math.PI;
 
-        setCarState({
-          x: point.x,
-          y: point.y,
-          angle: angleDeg,
-          visible: true,
-          scale: 1,
-          headlightsOn: true,
-        });
+        // Shortest arc angle difference
+        let angleDiff = targetDeg - smoothedAngleRef.current;
+        while (angleDiff > 180) angleDiff -= 360;
+        while (angleDiff < -180) angleDiff += 360;
 
-        // Add subtle trailing glow particles
-        particleCounter++;
-        if (particleCounter % 3 === 0) {
-          setTrail((prev) => [
-            ...prev.slice(-18),
-            { id: Date.now() + Math.random(), x: point.x, y: point.y },
-          ]);
+        if (isFirstTickRef.current) {
+          smoothedAngleRef.current = targetDeg;
+          isFirstTickRef.current = false;
+        } else {
+          // Rotational follow damping factor: 0.32 gives silky smooth realistic vehicle steering
+          smoothedAngleRef.current += angleDiff * 0.32;
+        }
+
+        // Direct GPU-accelerated transform update (Zero React rerender overhead during drive loop)
+        if (carElRef.current) {
+          carElRef.current.style.transform = `translate3d(${point.x}px, ${point.y}px, 0) translate(-50%, -50%) rotate(${smoothedAngleRef.current + 90}deg) scale(1)`;
+        }
+
+        // Dynamic glowing taillight trail streak along the road
+        if (trailPathRef.current) {
+          const trailLength = 190;
+          const trailStart = Math.max(0, currentDist - trailLength);
+          const segmentLen = currentDist - trailStart;
+          trailPathRef.current.style.strokeDasharray = `${segmentLen} ${totalLength}`;
+          trailPathRef.current.style.strokeDashoffset = `${-trailStart}`;
         }
 
         if (progress < 1) {
           animationFrameRef.current = requestAnimationFrame(driveStep);
         } else {
-          // Car has reached the house image!
+          // Destination reached: HQ House!
           setHouseReached(true);
-
-          // Brief pause at the house before blackout
           setTimeout(() => {
             triggerBlackoutSuccess();
           }, 350);
@@ -312,10 +418,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       };
 
       animationFrameRef.current = requestAnimationFrame(driveStep);
-    }, 300);
+    }, 250);
   };
 
-  // Blackout success screen with gold text for 3 seconds (User requirement: 3 seconds, no countdown displayed)
+  // Blackout success screen with gold text for 3 seconds
   const triggerBlackoutSuccess = () => {
     setIsBlackout(true);
 
@@ -329,8 +435,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     setIsBlackout(false);
     setIsDriving(false);
     setHouseReached(false);
-    setCarState((prev) => ({ ...prev, visible: false, scale: 0 }));
-    setTrail([]);
+    setCarState({ visible: false, scale: 0, headlightsOn: false });
+    if (trailPathRef.current) {
+      trailPathRef.current.style.strokeDasharray = "0 99999";
+    }
 
     // Clear form inputs
     setName("");
@@ -355,8 +463,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       setPathData(p);
     };
     updatePath();
+    const timer = setTimeout(updatePath, 150);
     window.addEventListener("resize", updatePath);
-    return () => window.removeEventListener("resize", updatePath);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePath);
+    };
   }, [generatePathString]);
 
   return (
@@ -483,7 +595,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       {/* =========================================================================
           TOP ROW: TIME & DATE ON THE TOP LEFT (User Requirement) & BACK TO HOME
       ========================================================================== */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between">
+      <div className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between">
         {/* TOP LEFT: LIVE TIME & DATE (Replaced Rohith Vallepu name as requested) */}
         <div className="flex items-center gap-2 sm:gap-3 bg-zinc-900/80 border border-zinc-800/80 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl backdrop-blur-md shadow-inner">
           <div className="flex items-center gap-2 text-zinc-300">
@@ -516,7 +628,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       {/* =========================================================================
           MAIN CONTACT BODY (Fitting viewport cleanly without vertical scrolling)
       ========================================================================== */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex-1 flex flex-col justify-center gap-6 sm:gap-8 my-auto">
+      <div className="relative z-20 w-full max-w-6xl mx-auto flex-1 flex flex-col justify-center gap-6 sm:gap-8 my-auto">
         {/* 1. Header: Subtitle, "Contacts" Title & House Image Beside It */}
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-400 font-mono">
@@ -573,7 +685,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
         {/* 2. Contact Details: Address, Phone, E-mail */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 py-2 border-y border-zinc-800/80">
           {/* Address */}
-          <div className="flex items-start gap-3 group">
+          <div ref={addressBlockRef} className="flex items-start gap-3 group">
             <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-red-500 shrink-0 group-hover:border-red-500/50 transition-colors">
               <MapPin className="w-4 h-4" />
             </div>
@@ -759,13 +871,40 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
       </div>
 
       {/* =========================================================================
-          INVISIBLE SVG PATH & DYNAMIC CAR ANIMATION OVERLAY
+          INVISIBLE PATH & DYNAMIC VEHICLE OVERLAY
       ========================================================================== */}
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none z-30"
         style={{ overflow: "visible" }}
       >
-        {/* Invisible path for length & tangent point interpolation */}
+        <defs>
+          {/* Subtle Dynamic Taillight Trail Gradient (active only while car drives) */}
+          <linearGradient id="laserTrailGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0" />
+            <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#fbbf24" stopOpacity="1" />
+          </linearGradient>
+
+          <filter id="trailGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        {/* Dynamic Taillight Streak (Appears strictly behind car during travel) */}
+        <path
+          ref={trailPathRef}
+          d={pathData}
+          fill="none"
+          stroke="url(#laserTrailGrad)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeDasharray="0 99999"
+          opacity={isDriving ? 0.9 : 0}
+          filter="url(#trailGlow)"
+        />
+
+        {/* Completely Invisible Path for length & smooth tangent calculations */}
         <path
           ref={hiddenPathRef}
           d={pathData}
@@ -773,30 +912,18 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
           stroke="transparent"
           strokeWidth="1"
         />
-
-        {/* Glowing particle trail fading behind the car */}
-        {trail.map((pt, index) => (
-          <circle
-            key={pt.id}
-            cx={pt.x}
-            cy={pt.y}
-            r={Math.max(1, (index / trail.length) * 3)}
-            fill="#fbbf24"
-            opacity={(index / trail.length) * 0.45}
-          />
-        ))}
       </svg>
 
-      {/* TOP-DOWN SPORTS CAR (POPS UP AT SEND BUTTON & TRAVELS TO HOUSE) */}
+      {/* TOP-DOWN SPORTS CAR (POPS UP AT SEND BUTTON & TRAVELS SMOOTHLY TO HOUSE) */}
       {carState.visible && (
         <div
-          className="absolute pointer-events-none z-40 transition-transform duration-75"
+          ref={carElRef}
+          className="absolute pointer-events-none z-40"
           style={{
-            left: `${carState.x}px`,
-            top: `${carState.y}px`,
-            transform: `translate(-50%, -50%) rotate(${carState.angle + 90}deg) scale(${carState.scale
-              })`,
-            transition: carState.scale < 1 ? "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)" : "none",
+            left: 0,
+            top: 0,
+            willChange: "transform",
+            transformOrigin: "center center",
           }}
         >
           {/* Sports Car Render in SVG */}
@@ -806,11 +933,11 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               <div
                 className="absolute bottom-full left-1/2 -translate-x-1/2 pointer-events-none"
                 style={{
-                  width: "120px",
-                  height: "140px",
+                  width: "140px",
+                  height: "170px",
                   background:
-                    "radial-gradient(ellipse at 50% 100%, rgba(255, 255, 230, 0.45) 0%, rgba(251, 191, 36, 0.18) 45%, transparent 75%)",
-                  clipPath: "polygon(40% 100%, 60% 100%, 95% 0%, 5% 0%)",
+                    "radial-gradient(ellipse at 50% 100%, rgba(255, 255, 230, 0.55) 0%, rgba(251, 191, 36, 0.22) 42%, transparent 75%)",
+                  clipPath: "polygon(40% 100%, 60% 100%, 96% 0%, 4% 0%)",
                   transformOrigin: "bottom center",
                 }}
               />
@@ -819,7 +946,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             {/* Vector Sports Car Top-Down Body */}
             <svg
               viewBox="0 0 36 64"
-              className="w-full h-full drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]"
+              className="w-full h-full drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]"
             >
               <defs>
                 <linearGradient id="carBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">

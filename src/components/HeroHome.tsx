@@ -1,5 +1,5 @@
 import React from "react";
-import rohithEditorial from "@/assets/Rohith.png";
+import rohithEditorial from "@/assets/rohith-editorial.png";
 
 export const HeroHome: React.FC = () => {
   return (
