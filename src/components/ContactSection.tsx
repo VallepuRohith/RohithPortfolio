@@ -261,7 +261,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     return catmullRomToBezier(waypoints, 0.72);
   }, []);
 
-  // Trigger Send Button and initiate Car Travel
+  // Trigger Send Button, dispatch email notification and initiate Car Travel
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (isDriving || isBlackout) return;
@@ -282,7 +282,43 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     }
 
     setFormErrors({});
+
+    // Send email to vallepurohith80@gmail.com with name as subject and message as description
+    sendEmailNotification({
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+    });
+
     startCarJourney();
+  };
+
+  // Dispatch details directly to vallepurohith80@gmail.com
+  const sendEmailNotification = async (payload: {
+    name: string;
+    email: string;
+    message: string;
+  }) => {
+    try {
+      await fetch("https://formsubmit.co/ajax/vallepurohith80@gmail.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          _subject: payload.name, // User requirement: name as subject
+          name: payload.name,
+          email: payload.email,
+          message: payload.message, // User requirement: message as description
+          _replyto: payload.email,
+          _captcha: "false",
+          _template: "table",
+        }),
+      });
+    } catch (err) {
+      console.warn("Email delivery notification error:", err);
+    }
   };
 
   // Prefill demo data for immediate testing
@@ -733,10 +769,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
                 E-mail
               </span>
               <a
-                href="mailto:contact@gmail.com"
+                href="mailto:vallepurohith80@gmail.com"
                 className="text-xs sm:text-sm font-medium text-zinc-200 hover:text-red-400 transition-colors font-mono tracking-tight"
               >
-                vallepurohith76@gmail.com
+                vallepurohith80@gmail.com
               </a>
               <span className="text-[10.5px] text-zinc-500">
                 Official Inquiries
@@ -1052,8 +1088,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
               </h2>
 
               <p className="font-editorial-body text-base sm:text-lg text-amber-200/80 max-w-md mx-auto leading-relaxed italic">
-                Your dispatch has safely arrived at Hyderabad, Nanakramguda.
-                Rohith will review and get in touch with you promptly.
+                Your dispatch has safely arrived at Hyderabad, Nanakramguda and been delivered to vallepurohith80@gmail.com.
               </p>
             </div>
           </div>
