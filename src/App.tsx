@@ -44,6 +44,8 @@ export function App() {
           ? "h-screen max-h-screen overflow-hidden bg-slate-950"
           : activeTab === "certifications"
           ? "h-screen max-h-screen overflow-hidden certificates-screen-bg text-white"
+          : activeTab === "experience"
+          ? "h-screen max-h-screen overflow-hidden bg-[#161c28] text-white"
           : activeTab === "contact"
           ? "h-screen max-h-screen overflow-hidden bg-[#0a0b0e] text-white"
           : "sky-ambient-bg"
@@ -57,6 +59,7 @@ export function App() {
         isDark={
           activeTab === "projects" ||
           activeTab === "certifications" ||
+          activeTab === "experience" ||
           activeTab === "contact"
         }
       />

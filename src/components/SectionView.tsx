@@ -3,6 +3,7 @@ import { NavTab } from "./NavigationDock";
 import { ProjectsSection } from "./ProjectsSection";
 import { CertificatesSection } from "./CertificatesSection";
 import { ContactSection } from "./ContactSection";
+import { ExperienceSection } from "./ExperienceSection";
 import {
   Code2,
   Briefcase,
@@ -189,6 +190,16 @@ export const SectionView: React.FC<SectionViewProps> = ({
   // Dedicated 3D Curved Perspective Carousel View for CERTIFICATIONS (Matching Reference Image)
   if (tab === "certifications") {
     return <CertificatesSection onBackToHome={onBackToHome} />;
+  }
+
+  // Dedicated 3D Open Book Journal View for EXPERIENCE (Matching Reference Image)
+  if (tab === "experience") {
+    return (
+      <ExperienceSection
+        onBackToHome={onBackToHome}
+        onNavigate={onNavigate}
+      />
+    );
   }
 
   // Dedicated Editorial Dark & Urban Map View for CONTACT (Matching Reference Image)
