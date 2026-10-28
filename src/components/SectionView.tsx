@@ -2,6 +2,7 @@ import React from "react";
 import { NavTab } from "./NavigationDock";
 import { ProjectsSection } from "./ProjectsSection";
 import { CertificatesSection } from "./CertificatesSection";
+import { ContactSection } from "./ContactSection";
 import {
   Code2,
   Briefcase,
@@ -16,6 +17,7 @@ import {
 interface SectionViewProps {
   tab: NavTab;
   onBackToHome: () => void;
+  onNavigate?: (tab: NavTab) => void;
 }
 
 interface SectionMeta {
@@ -175,6 +177,7 @@ export const skillCategories: SkillCategory[] = [
 export const SectionView: React.FC<SectionViewProps> = ({
   tab,
   onBackToHome,
+  onNavigate,
 }) => {
   if (tab === "home") return null;
 
@@ -186,6 +189,16 @@ export const SectionView: React.FC<SectionViewProps> = ({
   // Dedicated 3D Curved Perspective Carousel View for CERTIFICATIONS (Matching Reference Image)
   if (tab === "certifications") {
     return <CertificatesSection onBackToHome={onBackToHome} />;
+  }
+
+  // Dedicated Editorial Dark & Urban Map View for CONTACT (Matching Reference Image)
+  if (tab === "contact") {
+    return (
+      <ContactSection
+        onBackToHome={onBackToHome}
+        onNavigate={onNavigate}
+      />
+    );
   }
 
   const meta = sectionConfig[tab];

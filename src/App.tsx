@@ -44,6 +44,8 @@ export function App() {
           ? "h-screen max-h-screen overflow-hidden bg-slate-950"
           : activeTab === "certifications"
           ? "h-screen max-h-screen overflow-hidden certificates-screen-bg text-white"
+          : activeTab === "contact"
+          ? "h-screen max-h-screen overflow-hidden bg-[#0a0b0e] text-white"
           : "sky-ambient-bg"
       } text-[#0f1c2e] overflow-x-hidden selection:bg-[#FFE3B3] selection:text-[#EA6113]`}
     >
@@ -52,7 +54,11 @@ export function App() {
         linkedInUrl="https://www.linkedin.com/in/vallepu-rohith"
         githubUrl="https://github.com/VallepuRohith"
         resumeUrl="/resume.pdf"
-        isDark={activeTab === "projects" || activeTab === "certifications"}
+        isDark={
+          activeTab === "projects" ||
+          activeTab === "certifications" ||
+          activeTab === "contact"
+        }
       />
 
       {/* Main View Area: Home Hero or Section Screen */}
@@ -62,6 +68,7 @@ export function App() {
         <SectionView
           tab={activeTab}
           onBackToHome={() => handleTabChange("home")}
+          onNavigate={handleTabChange}
         />
       )}
 

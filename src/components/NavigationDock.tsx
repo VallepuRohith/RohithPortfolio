@@ -37,12 +37,23 @@ export const NavigationDock: React.FC<NavigationDockProps> = ({
   activeTab,
   onTabChange,
 }) => {
+  const isDark =
+    activeTab === "projects" ||
+    activeTab === "certifications" ||
+    activeTab === "contact";
+
   return (
     <nav
       aria-label="Portfolio primary navigation"
       className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-5xl px-3 flex justify-center"
     >
-      <div className="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-full bg-white/60 border border-white/80 backdrop-blur-2xl shadow-[0_14px_40px_rgba(25,50,85,0.1),0_1px_3px_rgba(255,255,255,0.9)_inset] overflow-x-auto max-w-full scrollbar-none">
+      <div
+        className={`flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-full backdrop-blur-2xl transition-all duration-300 overflow-x-auto max-w-full scrollbar-none ${
+          isDark
+            ? "bg-zinc-950/80 border border-zinc-800/90 shadow-[0_14px_40px_rgba(0,0,0,0.65)]"
+            : "bg-white/60 border border-white/80 shadow-[0_14px_40px_rgba(25,50,85,0.1),0_1px_3px_rgba(255,255,255,0.9)_inset]"
+        }`}
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -51,12 +62,20 @@ export const NavigationDock: React.FC<NavigationDockProps> = ({
             <button
               key={item.id}
               onClick={() => onTabChange(item.id)}
-              className={`dock-pill ${isActive ? "active" : ""} shrink-0 cursor-pointer`}
+              className={`${
+                isDark ? "dock-pill-dark" : "dock-pill"
+              } ${isActive ? "active" : ""} shrink-0 cursor-pointer`}
               type="button"
             >
               <Icon
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
-                  isActive ? "text-white" : "text-[#47607a]"
+                  isActive
+                    ? isDark
+                      ? "text-zinc-900"
+                      : "text-white"
+                    : isDark
+                    ? "text-zinc-400"
+                    : "text-[#47607a]"
                 }`}
               />
               <span className="text-xs sm:text-[13px]">{item.label}</span>
