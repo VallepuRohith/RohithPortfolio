@@ -218,7 +218,7 @@ export const SectionView: React.FC<SectionViewProps> = ({
   // Custom Sunset Theme View for SKILLS only
   if (tab === "skills") {
     return (
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-start px-4 py-20 sm:py-24 lg:py-28 z-20 overflow-y-auto sunset-screen-bg">
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-start px-4 pt-28 sm:pt-32 lg:pt-36 pb-16 z-20 overflow-y-auto sunset-screen-bg">
         {/* Main Sunset Container with Rounded Edges */}
         <div className="w-full max-w-6xl rounded-3xl p-6 sm:p-10 lg:p-12 backdrop-blur-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300 border border-[#FFE3B3]/40 shadow-[0_24px_60px_rgba(180,60,0,0.25)] bg-[#EA6113]/25">
           {/* Back to Home Button */}
@@ -341,7 +341,7 @@ export const SectionView: React.FC<SectionViewProps> = ({
 
   // Standard Editorial View for all other sections (About, Projects, Experience, Certifications, Contact)
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center px-4 py-24 sm:py-28 z-20 overflow-y-auto sky-ambient-bg">
+    <div className="relative min-h-screen w-full flex flex-col items-center justify-start px-4 pt-28 sm:pt-32 lg:pt-36 pb-16 z-20 overflow-y-auto sky-ambient-bg">
       {/* Frosted Glass Content Container */}
       <div className="w-full max-w-3xl rounded-3xl frosted-card p-6 sm:p-10 backdrop-blur-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
         {/* Back to Home Button */}

@@ -261,3 +261,30 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+/* Hanging Navigation Clothesline & Swaying Physics */
+@keyframes hangingNavSway {
+  0% {
+    transform: translateY(var(--y-sag, 0px)) rotate(calc(var(--base-angle, 0deg) - 2.2deg));
+  }
+  50% {
+    transform: translateY(var(--y-sag, 0px)) rotate(calc(var(--base-angle, 0deg) + 2.2deg));
+  }
+  100% {
+    transform: translateY(var(--y-sag, 0px)) rotate(calc(var(--base-angle, 0deg) - 2.2deg));
+  }
+}
+
+.hanging-nav-item {
+  transform-origin: 50% -6px;
+  animation: hangingNavSway var(--sway-dur, 4s) ease-in-out infinite alternate;
+  animation-delay: var(--sway-delay, 0s);
+  will-change: transform;
+}
+
+.hanging-nav-item:hover {
+  animation-play-state: paused;
+  transform: translateY(calc(var(--y-sag, 0px) - 5px)) rotate(var(--base-angle, 0deg)) scale(1.06) !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+

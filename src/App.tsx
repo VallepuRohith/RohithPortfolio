@@ -41,15 +41,15 @@ export function App() {
         activeTab === "skills"
           ? "sunset-screen-bg"
           : activeTab === "projects"
-          ? "h-screen max-h-screen overflow-hidden bg-slate-950"
+          ? "min-h-screen bg-slate-950"
           : activeTab === "certifications"
-          ? "h-screen max-h-screen overflow-hidden certificates-screen-bg text-white"
+          ? "min-h-screen certificates-screen-bg text-white"
           : activeTab === "experience"
-          ? "h-screen max-h-screen overflow-hidden bg-[#161c28] text-white"
+          ? "min-h-screen bg-[#0d121c] text-white"
           : activeTab === "contact"
-          ? "h-screen max-h-screen overflow-hidden bg-[#0a0b0e] text-white"
+          ? "min-h-screen bg-[#0a0b0e] text-white"
           : "sky-ambient-bg"
-      } text-[#0f1c2e] overflow-x-hidden selection:bg-[#FFE3B3] selection:text-[#EA6113]`}
+      } text-[#0f1c2e] overflow-x-hidden overflow-y-auto selection:bg-[#FFE3B3] selection:text-[#EA6113]`}
     >
       {/* Top action buttons: LinkedIn, GitHub, Resume */}
       <TopActions
@@ -75,7 +75,7 @@ export function App() {
         />
       )}
 
-      {/* Floating Bottom Navigation Dock */}
+      {/* Hanging Top Navigation with Clips & Swaying Thread */}
       <NavigationDock
         activeTab={activeTab}
         onTabChange={handleTabChange}

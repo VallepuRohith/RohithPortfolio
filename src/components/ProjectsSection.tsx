@@ -245,7 +245,7 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onBackToHome }
   };
 
   return (
-    <div className="relative w-full h-screen max-h-screen overflow-hidden flex flex-col justify-between items-center select-none bg-slate-950">
+    <div className="relative w-full min-h-screen overflow-x-hidden overflow-y-auto flex flex-col justify-between items-center select-none bg-slate-950 pt-28 sm:pt-32 pb-14 sm:pb-16">
       {/* 1. Atmospheric Blurred Background of the Active Project with Smooth Crossfade */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         {projectsData.map((project, idx) => (
@@ -267,26 +267,12 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onBackToHome }
         <div className="absolute inset-0 bg-slate-950/40" />
       </div>
 
-      {/* Top Floating Bar: Back to Home Button */}
-      <div className="relative z-30 w-full max-w-7xl pt-4 sm:pt-6 px-4 sm:px-8 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto">
-          {/* <button
-            onClick={onBackToHome}
-            type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white/90 bg-white/10 hover:bg-white/20 border border-white/25 backdrop-blur-xl shadow-lg transition-all cursor-pointer active:scale-95"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Home</span>
-          </button> */}
-        </div>
-      </div>
-
-      {/* 2. 3D Spatial Coverflow Stage Viewport (Fitting screen without scroll) */}
+      {/* 2. 3D Spatial Coverflow Stage Viewport (Starts cleanly below hanging navigation) */}
       <div
         ref={carouselRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative z-20 w-full flex-1 flex items-center justify-center overflow-visible min-h-[360px]"
+        className="relative z-20 w-full my-4 sm:my-6 flex-1 flex items-center justify-center overflow-visible min-h-[440px] sm:min-h-[480px] lg:min-h-[500px]"
         style={{
           perspective: "1200px",
           perspectiveOrigin: "50% 50%",
@@ -400,8 +386,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onBackToHome }
         })}
       </div>
 
-      {/* 3. Down Navigation Part to Browse Projects (Sits cleanly above main dock) */}
-      <div className="relative z-30 mb-20 sm:mb-24 flex flex-col items-center gap-2.5 px-4">
+      {/* 3. Down Navigation Part to Browse Projects */}
+      <div className="relative z-30 my-4 sm:my-6 flex flex-col items-center gap-2.5 px-4">
         {/* Glassmorphic Navigation Capsule */}
         <div className="inline-flex items-center gap-2 sm:gap-3 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full bg-black/50 backdrop-blur-2xl border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.2)]">
           {/* Previous Arrow Button */}

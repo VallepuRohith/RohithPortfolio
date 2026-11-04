@@ -501,16 +501,18 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
     updatePath();
     const timer = setTimeout(updatePath, 150);
     window.addEventListener("resize", updatePath);
+    window.addEventListener("scroll", updatePath);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", updatePath);
+      window.removeEventListener("scroll", updatePath);
     };
   }, [generatePathString]);
 
   return (
     <div
       ref={cardContainerRef}
-      className="relative w-full h-screen max-h-screen overflow-hidden bg-[#090a0d] text-white flex flex-col justify-between items-center select-none pt-4 sm:pt-6 pb-20 sm:pb-24 px-4 sm:px-8 lg:px-12"
+      className="relative w-full min-h-screen overflow-x-hidden overflow-y-auto bg-[#090a0d] text-white flex flex-col justify-between items-center select-none pt-28 sm:pt-32 pb-14 sm:pb-16 px-4 sm:px-8 lg:px-12"
     >
       {/* =========================================================================
           MAP BACKGROUND LAYER (Faint Dark Vector Urban Map as per reference)

@@ -418,7 +418,7 @@ export const CertificatesSection: React.FC<CertificatesSectionProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen max-h-screen overflow-hidden flex flex-col justify-between items-center select-none certificates-screen-bg text-white">
+    <div className="relative w-full min-h-screen overflow-x-hidden overflow-y-auto flex flex-col justify-between items-center select-none certificates-screen-bg text-white pt-28 sm:pt-32 pb-14 sm:pb-16">
       {/* 1. Atmospheric Colored Glow of the Active Certificate */}
       <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
         {certificatesData.map((cert, idx) => (
@@ -439,58 +439,12 @@ export const CertificatesSection: React.FC<CertificatesSectionProps> = ({
         <div className="absolute inset-0 bg-radial from-transparent via-[#0d0a08]/60 to-[#080605]/95" />
       </div>
 
-      {/* Top Floating Bar: Back to Home Button */}
-      {/* <div className="relative z-30 w-full max-w-7xl pt-3 sm:pt-4 px-4 sm:px-8 flex items-center justify-between pointer-events-none"> */}
-      {/* <div className="pointer-events-auto"> */}
-      {/* <button
-            onClick={onBackToHome}
-            type="button"
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white/90 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-xl shadow-lg transition-all cursor-pointer active:scale-95"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Home</span>
-          </button> */}
-      {/* </div> */}
-
-      {/* Verified Credential Tag */}
-      {/* <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium text-amber-200/90 bg-amber-500/10 border border-amber-500/20 backdrop-blur-md">
-          <Sparkles className="w-3 h-3 text-amber-400" />
-          <span>Accredited Technical Proficiencies</span>
-        </div> */}
-      {/* </div> */}
-
-      {/* 2. Top Header Pattern Analyzed from the Reference Picture */}
-      {/* <header className="relative z-20 w-full max-w-7xl px-4 sm:px-8 pt-1 sm:pt-2"> */}
-      {/* Upper Editorial Eyebrows matching Reference Image */}
-      {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2 sm:mb-3">
-          <div className="text-xs sm:text-sm font-semibold tracking-wide text-amber-100/80">
-            View our latest certificates
-          </div>
-          <div className="text-[11px] sm:text-xs text-stone-400 max-w-md sm:text-right font-normal leading-relaxed">
-            Rigorous technical certifications and industry standards validating production-grade engineering mastery.
-          </div>
-        </div> */}
-
-      {/* Main Title Row: Left Statement + Giant "CERTIFICATES" (Replacing "OUR WORKS") */}
-      {/* <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-6 pt-1 border-t border-white/10"> */}
-      {/* Left statement paragraph */}
-      {/* <div className="max-w-xs text-[11px] sm:text-xs text-stone-300/85 leading-relaxed order-2 md:order-1 hidden sm:block">
-            Rohith's verified technical certifications &amp; credentials validating production-ready engineering across core languages and cloud.
-          </div> */}
-
-      {/* 1. "OUR WORKS" replaced with "CERTIFICATES" in wide futuristic display font */}
-      {/* <h1 className="font-syne text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold uppercase tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] order-1 md:order-2">
-            CERTIFICATES
-          </h1> */}
-      {/* </div> */}
-      {/* </header> */}
-
-      {/* 3. 3D Spatial Coverflow Stage: 5 Cards Visible Simultaneously */}
+      {/* 2. 3D Spatial Coverflow Stage: 5 Cards Visible Simultaneously */}
       <div
         ref={carouselRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative z-20 w-full flex-1 flex items-center justify-center overflow-visible min-h-[340px] sm:min-h-[380px]"
+        className="relative z-20 w-full my-4 sm:my-6 flex-1 flex items-center justify-center overflow-visible min-h-[420px] sm:min-h-[460px]"
         style={{
           perspective: "1200px",
           perspectiveOrigin: "50% 50%",
@@ -602,8 +556,8 @@ export const CertificatesSection: React.FC<CertificatesSectionProps> = ({
         })}
       </div>
 
-      {/* 4. Bottom Navigation Part Analyzed from Reference Picture (Sits cleanly above dock) */}
-      <div className="relative z-30 mb-20 sm:mb-24 flex flex-col items-center gap-3 px-4">
+      {/* 3. Bottom Navigation Controls */}
+      <div className="relative z-30 my-4 sm:my-6 flex flex-col items-center gap-3 px-4">
         {/* Navigation Controls: Circular Next & Previous Buttons (from the reference picture) */}
         <div className="flex items-center justify-center gap-3">
           {/* Circular Previous Button ( ← ) */}

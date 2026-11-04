@@ -6,14 +6,13 @@ import {
   MapPin,
   Briefcase,
   GraduationCap,
-  Code2,
   Binary,
-  Layers,
-  Sparkles,
   BookOpen,
   Calendar,
   Building2,
   CheckCircle2,
+  Sparkles,
+  Award,
 } from "lucide-react";
 import { NavTab } from "./NavigationDock";
 
@@ -46,25 +45,25 @@ export const experiencesData: ExperienceItem[] = [
     location: "Hyderabad, India",
     designation: "Technical Instructor — DSA & CRT Trainer",
     period: "2023 – Present",
-    type: "Full-Time · Technical Training & Mentorship",
+    type: "Full-Time · Technical Instruction & Training",
     pageNumber: "01",
-    chapterTitle: "Chapter I — Algorithmic Mastery & CRT",
+    chapterTitle: "Chapter I — Data Structures, Algorithms & CRT",
     image: "/assets/experience/bytexl.jpg",
     imageAlt: "ByteXL Data Structures & Algorithms and CRT Classroom Training in Hyderabad",
     designationBadge: "DSA & CAMPUS RECRUITMENT TRAINING",
-    focusArea: "Algorithmic Problem Solving & Interview Readiness",
+    focusArea: "Algorithmic Problem Solving & CRT Specialist",
     summary:
       "Taught core and advanced Data Structures & Algorithms while spearheading intensive Campus Recruitment Training (CRT) sessions for engineering students in Hyderabad.",
     description: [
-      "Designed and delivered rigorous curriculum in Data Structures and Algorithms, covering Arrays, Linked Lists, Trees, Graphs, Dynamic Programming, Recursion, and Asymptotic Complexity (Big-O) analysis.",
-      "Conducted extensive Campus Recruitment Training (CRT) batches, preparing aspiring software engineers to clear technical coding rounds and algorithmic interview bars at premier product and service organizations.",
-      "Led interactive live coding breakdowns, taught optimal problem-solving heuristics, and mentored students in cracking competitive programming challenges with high efficiency.",
+      "Taught Data Structures and Algorithms with deep focus on asymptotic time/space complexity (Big-O), Arrays, Linked Lists, Stacks, Queues, Binary Trees, Graphs, Recursion, and Dynamic Programming.",
+      "Conducted intensive Campus Recruitment Training (CRT) classes, equipping aspiring software engineers with the problem-solving heuristics and algorithmic strategies needed to crack competitive technical coding rounds.",
+      "Conducted live problem-solving sessions, taught optimal coding patterns across C++, Java, and Python, and led mock technical interviews mimicking premier hiring standards.",
     ],
     keyHighlights: [
-      "Mentored hundreds of students in mastering Data Structures & Algorithms",
-      "Conducted Campus Recruitment Training (CRT) across competitive coding rounds",
-      "Delivered live code walk-throughs & optimal time/space complexity derivations",
-      "Organized mock technical interviews and comprehensive algorithmic reviews",
+      "Instructed in-depth Data Structures & Algorithms (Trees, Graphs, DP, Sorting)",
+      "Conducted specialized Campus Recruitment Training (CRT) for engineering batches",
+      "Mentored hundreds of students on algorithmic optimization & interview readiness",
+      "Led live code walk-throughs & competitive programming problem-solving",
     ],
     skills: [
       "Data Structures",
@@ -74,8 +73,8 @@ export const experiencesData: ExperienceItem[] = [
       "C++",
       "Java",
       "Python",
-      "Time Complexity",
       "Dynamic Programming",
+      "Asymptotic Analysis",
       "Systematic Problem Solving",
     ],
     quote: "Empowering future engineers to master complex algorithms with confidence and clarity.",
@@ -97,15 +96,15 @@ export const experiencesData: ExperienceItem[] = [
     summary:
       "Dual role as Software Developer and Technical Instructor, engineering scalable software modules and teaching foundational to advanced Data Structures & Algorithms in Hyderabad.",
     description: [
-      "Built and maintained software applications while delivering structured instructional modules on Data Structures, Algorithms, and Core Computer Science fundamentals.",
-      "Taught Data Structures and Algorithms with heavy emphasis on practical implementations, clean code standards, and real-world software engineering application.",
-      "Conducted code reviews, debugged complex algorithmic edge cases, and guided learners through building robust software solutions from concept to deployment.",
+      "Taught foundational to advanced Data Structures and Algorithms with strong emphasis on real-world implementations, clean code principles, and efficient data modeling.",
+      "Engineered and maintained full-stack web application modules using modern JavaScript, React, Node.js, and database architectures.",
+      "Conducted rigorous code reviews, guided students through debugging complex algorithmic edge cases, and developed structured programming assessments.",
     ],
     keyHighlights: [
-      "Instructed foundational and advanced Data Structures and Algorithms",
-      "Developed software features with modern web stacks and clean code principles",
-      "Guided students through complex algorithmic problem sets and debugging",
-      "Created structured programming assignments and real-time coding assessments",
+      "Taught core and advanced Data Structures & Algorithms to diverse student cohorts",
+      "Developed web features and internal educational tools with modern tech stacks",
+      "Conducted detailed code reviews and one-on-one algorithmic debugging sessions",
+      "Designed structured coding problem sets and practical development milestones",
     ],
     skills: [
       "Software Development",
@@ -134,36 +133,47 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
   const [flipDirection, setFlipDirection] = useState<"next" | "prev">("next");
+  const [flipProgress, setFlipProgress] = useState<boolean>(false);
+  const [targetIndex, setTargetIndex] = useState<number>(0);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
 
   const totalExperiences = experiencesData.length;
   const currentExperience = experiencesData[activeIndex];
 
-  // Navigate to Next Experience Page with 3D Flip
-  const handleNext = useCallback(() => {
-    if (isFlipping) return;
-    setFlipDirection("next");
-    setIsFlipping(true);
-    setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % totalExperiences);
-      setTimeout(() => {
-        setIsFlipping(false);
-      }, 350);
-    }, 280);
-  }, [isFlipping, totalExperiences]);
+  // 2-Second Realistic 3D Page Turn Transition Handler
+  const handleTurnPage = useCallback(
+    (direction: "next" | "prev") => {
+      if (isFlipping) return;
 
-  // Navigate to Previous Experience Page with 3D Flip
-  const handlePrev = useCallback(() => {
-    if (isFlipping) return;
-    setFlipDirection("prev");
-    setIsFlipping(true);
-    setTimeout(() => {
-      setActiveIndex((prev) => (prev - 1 + totalExperiences) % totalExperiences);
+      const nextIdx =
+        direction === "next"
+          ? (activeIndex + 1) % totalExperiences
+          : (activeIndex - 1 + totalExperiences) % totalExperiences;
+
+      setFlipDirection(direction);
+      setTargetIndex(nextIdx);
+      setIsFlipping(true);
+      setFlipProgress(false);
+
+      // Trigger the 3D flip on the next browser frame for smooth CSS interpolation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipProgress(true);
+        });
+      });
+
+      // Complete the 2-second page flip transition
       setTimeout(() => {
+        setActiveIndex(nextIdx);
         setIsFlipping(false);
-      }, 350);
-    }, 280);
-  }, [isFlipping, totalExperiences]);
+        setFlipProgress(false);
+      }, 2050); // Exactly 2 seconds plus brief safety buffer
+    },
+    [activeIndex, isFlipping, totalExperiences]
+  );
+
+  const handleNext = useCallback(() => handleTurnPage("next"), [handleTurnPage]);
+  const handlePrev = useCallback(() => handleTurnPage("prev"), [handleTurnPage]);
 
   // Keyboard navigation support
   useEffect(() => {
@@ -175,89 +185,308 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleNext, handlePrev]);
 
-  return (
-    <div className="relative w-full h-screen max-h-screen overflow-hidden bg-[#161c28] text-white flex flex-col justify-between items-center select-none pt-3 sm:pt-5 pb-20 sm:pb-24 px-4 sm:px-6 lg:px-10">
-      {/* =========================================================================
-          BACKGROUND ATMOSPHERIC STUDIO LIGHTING (Matching Reference Image)
-      ========================================================================== */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Soft Radial Ambient Studio Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[700px] bg-sky-500/5 rounded-full blur-[150px]" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/5 rounded-full blur-[130px]" />
+  // Render Left Page View ("image regarding the designation")
+  const renderLeftPage = (exp: ExperienceItem) => (
+    <div className="w-full h-full relative p-4 sm:p-5 lg:p-6 flex flex-col justify-between bg-gradient-to-br from-[#1c2436] via-[#161c28] to-[#121622] text-left select-none overflow-hidden">
+      {/* Curved Page Surface Shading */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10 opacity-70"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(0,0,0,0.35) 0%, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 55%, rgba(0,0,0,0.4) 95%, rgba(0,0,0,0.7) 100%)",
+        }}
+      />
 
-        {/* Faint Studio Grid Backdrop */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`,
-            backgroundSize: "32px 32px",
-          }}
-        />
+      {/* Deep Spine Crease Inner Shadow on Right Edge */}
+      <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-black/80 via-black/35 to-transparent pointer-events-none z-20" />
 
-        {/* Studio Surface Horizon Line / Shadow Gradient */}
-        <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#0e121a] to-transparent opacity-80" />
+      {/* Top Header Ribbon */}
+      <div className="relative z-10 flex items-center justify-between pb-2 border-b border-zinc-800/80">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-md bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center text-red-500">
+            <Binary className="w-3 h-3" />
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-mono tracking-wider text-zinc-300 font-semibold uppercase">
+            {exp.focusArea}
+          </span>
+        </div>
+        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+          Page {exp.pageNumber}
+        </span>
       </div>
 
-      {/* =========================================================================
-          TOP ROW: HEADER & METRICS (Matching "Journal ⎚ 70 Pages" Design Pattern)
-      ========================================================================== */}
-      <div className="relative z-20 w-full max-w-6xl mx-auto flex items-center justify-between">
-        {/* Top Left: Back to Home Button */}
-        <button
-          onClick={onBackToHome}
-          type="button"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-zinc-300 bg-zinc-900/80 border border-zinc-800 hover:border-zinc-600 hover:text-white transition-all cursor-pointer backdrop-blur-md shadow-sm group"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-          <span>Back to Home</span>
-        </button>
+      {/* Main Image Area: Image regarding designation with polaroid/photo mount aesthetic */}
+      <div className="relative z-10 flex-1 my-2.5 sm:my-3 rounded-xl overflow-hidden border border-zinc-700/80 shadow-[0_12px_28px_rgba(0,0,0,0.7)] bg-zinc-950 group">
+        {!imageError[exp.id] ? (
+          <img
+            src={exp.image}
+            alt={exp.imageAlt}
+            onError={() =>
+              setImageError((prev) => ({ ...prev, [exp.id]: true }))
+            }
+            className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+          />
+        ) : (
+          /* High-Fidelity Fallback Graphic */
+          <div className="w-full h-full flex flex-col justify-between p-5 bg-gradient-to-br from-zinc-900 via-[#192130] to-[#0f141f]">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono text-red-400 bg-red-950/60 px-2 py-0.5 rounded border border-red-900/60 font-semibold">
+                {exp.designationBadge}
+              </span>
+              <Sparkles className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="flex flex-col gap-2 my-auto text-center items-center py-4">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-800/90 border border-zinc-700 flex items-center justify-center text-red-400 shadow-lg">
+                <GraduationCap className="w-7 h-7" />
+              </div>
+              <h4 className="font-editorial text-lg font-bold text-white tracking-wide">
+                {exp.designation}
+              </h4>
+              <p className="text-xs text-zinc-400 font-editorial-body max-w-xs italic">
+                "{exp.quote}"
+              </p>
+            </div>
+            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-2 border-t border-zinc-800/80">
+              <span>{exp.company} • Hyderabad</span>
+              <span>{exp.period}</span>
+            </div>
+          </div>
+        )}
 
-        {/* Center: "Journal" Header with Page Badge (Exact Pattern in Picture) */}
-        <div className="flex flex-col items-center">
-          <h1 className="font-editorial text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-sm">
-            Journal
-          </h1>
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-mono mt-0.5">
-            <BookOpen className="w-3.5 h-3.5 text-zinc-400" />
-            <span>
-              {totalExperiences} Chapters • Hyderabad, IN
+        {/* Ambient Vignette Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+
+        {/* Designation Badge Overlay on bottom of Left Image */}
+        <div className="absolute bottom-2 left-2 right-2 px-3 py-2 rounded-lg bg-black/85 backdrop-blur-md border border-zinc-700/80 text-left pointer-events-none">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-mono uppercase tracking-widest text-red-400 font-bold">
+              {exp.designationBadge}
+            </span>
+            <span className="text-[9px] font-mono text-zinc-400">
+              {exp.period}
+            </span>
+          </div>
+          <div className="text-xs font-semibold text-white truncate mt-0.5">
+            {exp.designation}
+          </div>
+        </div>
+      </div>
+
+      {/* Left Page Footer */}
+      <div className="relative z-10 flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1">
+        <span>Rohith Vallepu Portfolio</span>
+        <span className="text-zinc-400">{exp.company}</span>
+      </div>
+    </div>
+  );
+
+  // Render Right Page View (User requirement: Top left Company name, Top right Location, after that Designation and Description)
+  const renderRightPage = (exp: ExperienceItem) => (
+    <div className="w-full h-full relative p-4 sm:p-6 lg:p-7 flex flex-col justify-between bg-gradient-to-bl from-[#1c2436] via-[#161c28] to-[#121622] text-left select-none overflow-y-auto custom-scrollbar">
+      {/* Curved Page Surface Shading */}
+      <div
+        className="absolute inset-0 pointer-events-none z-10 opacity-70"
+        style={{
+          background:
+            "linear-gradient(270deg, rgba(0,0,0,0.35) 0%, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 55%, rgba(0,0,0,0.4) 95%, rgba(0,0,0,0.7) 100%)",
+        }}
+      />
+
+      {/* Deep Spine Crease Inner Shadow on Left Edge */}
+      <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-black/80 via-black/35 to-transparent pointer-events-none z-20" />
+
+      {/* Upper Content Section */}
+      <div className="relative z-10 flex flex-col">
+        {/* 1. TOP ROW: Top Left Company Name & Top Right Location */}
+        <div className="flex items-center justify-between pb-2.5 border-b border-zinc-800/80">
+          {/* TOP LEFT: Company Name */}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-red-500 shadow-sm shrink-0">
+              <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="font-editorial text-lg sm:text-xl font-bold tracking-tight text-white leading-tight">
+                {exp.company}
+              </h2>
+              <span className="text-[9.5px] font-mono text-zinc-400">
+                {exp.companyTag}
+              </span>
+            </div>
+          </div>
+
+          {/* TOP RIGHT: Location */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 font-mono text-xs shadow-inner shrink-0">
+            <MapPin className="w-3 h-3 text-red-500 shrink-0" />
+            <span className="font-medium text-[10.5px]">{exp.location}</span>
+          </div>
+        </div>
+
+        {/* 2. AFTER THAT: Designation Row */}
+        <div className="mt-2.5 mb-2 flex flex-col gap-0.5">
+          <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+            {exp.designation}
+          </h3>
+          <div className="flex items-center gap-2 text-[10px] font-mono text-zinc-400">
+            <span className="text-red-400 font-semibold">{exp.type}</span>
+            <span>•</span>
+            <span className="flex items-center gap-1 text-zinc-400">
+              <Calendar className="w-3 h-3 text-zinc-500" />
+              <span>{exp.period}</span>
             </span>
           </div>
         </div>
 
-        {/* Top Right: Status Badge */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-xs font-mono text-zinc-400 backdrop-blur-md">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Verified History</span>
+        {/* 3. AFTER THAT: Description About That Job */}
+        <div className="flex flex-col gap-1.5 my-1.5 text-zinc-300 text-xs sm:text-[12px] leading-relaxed">
+          {exp.description.map((paragraph, pIdx) => (
+            <p key={pIdx} className="font-sans text-zinc-300/95">
+              {paragraph}
+            </p>
+          ))}
+        </div>
+
+        {/* Key Responsibilities Checklist */}
+        <div className="mt-1.5 pt-1.5 border-t border-zinc-800/80 flex flex-col gap-1">
+          <span className="text-[9.5px] font-mono uppercase tracking-widest text-zinc-500">
+            Key Responsibilities & Highlights:
+          </span>
+          <div className="grid grid-cols-1 gap-1">
+            {exp.keyHighlights.slice(0, 3).map((item, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-1.5 text-[10.5px] sm:text-[11px] text-zinc-300"
+              >
+                <CheckCircle2 className="w-3 h-3 text-red-500 shrink-0 mt-0.5" />
+                <span className="leading-tight">{item}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* Lower Content Section: Skills & Page Footer */}
+      <div className="relative z-10 pt-2 border-t border-zinc-800/80 flex flex-col gap-1.5">
+        {/* Skills Pills */}
+        <div className="flex flex-wrap gap-1">
+          {exp.skills.slice(0, 6).map((skill) => (
+            <span
+              key={skill}
+              className="px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-800 text-[9.5px] font-mono text-zinc-300 shadow-sm"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+
+        {/* Right Page Footer */}
+        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-0.5">
+          <span>{exp.chapterTitle}</span>
+          <span className="font-bold text-zinc-400">
+            {activeIndex + 1} / {totalExperiences}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="relative w-full min-h-screen overflow-x-hidden overflow-y-auto bg-[#0d121c] text-white flex flex-col justify-between items-center select-none pt-28 sm:pt-32 pb-14 sm:pb-16 px-3 sm:px-6 lg:px-8">
       {/* =========================================================================
-          MAIN 3D BOOK STRUCTURE (Matching Picture: Open Spread + Fanned Stack)
+          ATMOSPHERIC STUDIO BACKDROP (Warm ambient spotlighting on book)
+      ========================================================================== */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Soft Radial Ambient Spotlight on the book */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[750px] bg-sky-600/5 rounded-full blur-[160px]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-amber-500/5 rounded-full blur-[140px]" />
+
+        {/* Subtle Reading Studio Surface Gradient */}
+        <div className="absolute bottom-0 left-0 right-0 h-56 bg-gradient-to-t from-[#080b11] via-[#0b0e17] to-transparent opacity-95" />
+      </div>
+
+      {/* =========================================================================
+          REALISTIC 3D BOOK RIG (HAND-HELD PERSPECTIVE & NATURAL ARCH)
       ========================================================================== */}
       <div
-        className="relative z-10 w-full max-w-5xl flex-1 flex items-center justify-center my-auto px-2 sm:px-4"
-        style={{ perspective: "1800px" }}
+        className="relative z-10 w-full max-w-5xl flex-1 flex items-center justify-center my-4 sm:my-6 px-2 sm:px-4"
+        style={{ perspective: "2200px" }}
       >
-        {/* Master Book Frame with 3D Perspective */}
+        {/* Ambient Cast Soft Desk Shadow directly beneath the book */}
         <div
-          className={`relative w-full max-w-4xl h-[430px] sm:h-[460px] md:h-[490px] lg:h-[510px] transition-transform duration-500 ease-out flex items-center justify-center`}
+          className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-[85%] max-w-4xl h-24 bg-black/85 rounded-[50%] blur-3xl pointer-events-none z-0"
+          style={{ transform: "scale(1, 0.45)" }}
+        />
+
+        {/* Book Container with Reading Pitch Angle (rotateX 6deg for natural hand-held perspective) */}
+        <div
+          className="relative w-full max-w-4xl h-[420px] sm:h-[450px] md:h-[480px] lg:h-[500px]"
           style={{
             transformStyle: "preserve-3d",
-            transform: isFlipping
-              ? flipDirection === "next"
-                ? "rotateY(-4deg) scale(0.98)"
-                : "rotateY(4deg) scale(0.98)"
-              : "rotateY(0deg) scale(1)",
+            transform: "rotateX(6.5deg)",
           }}
         >
           {/* =====================================================================
-              LEFT SIDE: FANNED PAGES STACK (Matching Reference Image Exact Look!)
+              1. HARDCOVER LEATHER CASING & GOLD CORNER EMBOSSING
+          ====================================================================== */}
+          <div
+            className="absolute -inset-2.5 sm:-inset-3 rounded-[26px] bg-gradient-to-br from-[#1d2536] via-[#131824] to-[#0c0f17] shadow-[0_30px_70px_rgba(0,0,0,0.9),0_10px_25px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.18)] border border-zinc-700/60 pointer-events-none z-0"
+            style={{
+              transform: "translateZ(-8px)",
+            }}
+          >
+            {/* Fine Inset Gold Foil Border Rule running inside cover */}
+            <div className="absolute inset-1.5 sm:inset-2 rounded-[22px] border border-[#d4af37]/20 pointer-events-none" />
+
+            {/* Gilded Metal Corner Accents at 4 Corners of Book Cover */}
+            <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#d4af37]/60 rounded-tl-sm pointer-events-none" />
+            <div className="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#d4af37]/60 rounded-tr-sm pointer-events-none" />
+            <div className="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#d4af37]/60 rounded-bl-sm pointer-events-none" />
+            <div className="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#d4af37]/60 rounded-br-sm pointer-events-none" />
+
+            {/* Center Spine Hump & Stitching indentation */}
+            <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-8 bg-gradient-to-r from-[#0d121c] via-[#070a10] to-[#0d121c] shadow-[inset_0_0_12px_rgba(0,0,0,0.95)] border-x border-white/5" />
+          </div>
+
+          {/* =====================================================================
+              2. REALISTIC STACKED PAGE EDGES (PAPER BLOCK THICKNESS)
+          ====================================================================== */}
+          {/* Bottom Page Block Thickness */}
+          <div
+            className="absolute -bottom-2 left-6 right-6 h-3 rounded-b-md shadow-md pointer-events-none z-10"
+            style={{
+              background:
+                "repeating-linear-gradient(0deg, #94a3b8 0px, #64748b 1px, #334155 2px, #94a3b8 3px)",
+              opacity: 0.7,
+              transform: "translateZ(-2px)",
+            }}
+          />
+          {/* Left Side Page Block Thickness */}
+          <div
+            className="absolute top-5 bottom-5 -left-2 w-3 rounded-l-md pointer-events-none z-10 hidden sm:block"
+            style={{
+              background:
+                "repeating-linear-gradient(90deg, #94a3b8 0px, #64748b 1px, #334155 2px, #94a3b8 3px)",
+              opacity: 0.7,
+              transform: "translateZ(-2px)",
+            }}
+          />
+          {/* Right Side Page Block Thickness */}
+          <div
+            className="absolute top-5 bottom-5 -right-2 w-3 rounded-r-md pointer-events-none z-10 hidden sm:block"
+            style={{
+              background:
+                "repeating-linear-gradient(90deg, #94a3b8 0px, #64748b 1px, #334155 2px, #94a3b8 3px)",
+              opacity: 0.7,
+              transform: "translateZ(-2px)",
+            }}
+          />
+
+          {/* =====================================================================
+              3. FANNED STACK OF PREVIOUS PAGES ON THE LEFT (Matching Reference Image)
           ====================================================================== */}
           <div className="absolute left-0 top-0 bottom-0 pointer-events-none z-0 hidden sm:block">
             {/* Sheet 4 (Furthest back in stack) */}
             <div
-              className="absolute top-2 bottom-2 w-48 rounded-l-2xl border border-white/10 bg-gradient-to-l from-[#182030] to-[#121622] shadow-2xl transition-all duration-300"
+              className="absolute top-2.5 bottom-2.5 w-48 rounded-l-2xl border border-white/10 bg-gradient-to-l from-[#182030] to-[#121622] shadow-2xl transition-all duration-300"
               style={{
                 left: "-38px",
                 transform: "rotateY(-18deg) scale(0.91)",
@@ -266,7 +495,7 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
             />
             {/* Sheet 3 */}
             <div
-              className="absolute top-1.5 bottom-1.5 w-48 rounded-l-2xl border border-white/15 bg-gradient-to-l from-[#1e263a] to-[#141a28] shadow-2xl transition-all duration-300"
+              className="absolute top-2 bottom-2 w-48 rounded-l-2xl border border-white/15 bg-gradient-to-l from-[#1e263a] to-[#141a28] shadow-2xl transition-all duration-300"
               style={{
                 left: "-28px",
                 transform: "rotateY(-14deg) scale(0.94)",
@@ -294,324 +523,235 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           </div>
 
           {/* =====================================================================
-              RIGHT SIDE: BOOK COVER / UPCOMING PAGES BACKING STACK
-          ====================================================================== */}
-          <div className="absolute right-0 top-0 bottom-0 pointer-events-none z-0 hidden sm:block">
-            <div
-              className="absolute top-1 bottom-1 w-32 rounded-r-2xl border border-white/15 bg-gradient-to-r from-[#1e273a] to-[#131722] shadow-xl"
-              style={{
-                right: "-12px",
-                transform: "rotateY(8deg) scale(0.98)",
-                opacity: 0.6,
-              }}
-            />
-            <div
-              className="absolute top-2 bottom-2 w-32 rounded-r-2xl border border-white/10 bg-gradient-to-r from-[#171e2c] to-[#0e121a] shadow-2xl"
-              style={{
-                right: "-22px",
-                transform: "rotateY(14deg) scale(0.95)",
-                opacity: 0.35,
-              }}
-            />
-          </div>
-
-          {/* =====================================================================
-              AMBIENT REALISTIC UNDER-BOOK DROP SHADOW ON STUDIO TABLE
+              4. OPEN BOOK PAGES STAGE (3D WINGS FORMING A NATURAL BOOK V-TROUGH)
           ====================================================================== */}
           <div
-            className="absolute -bottom-8 left-8 right-8 h-16 bg-black/70 blur-2xl rounded-full pointer-events-none z-0"
-            style={{ transform: "scale(0.95, 0.4)" }}
-          />
-
-          {/* =====================================================================
-              THE CENTRAL OPEN BOOK SPREAD (2-PAGE SPREAD)
-          ====================================================================== */}
-          <div
-            className={`relative z-10 w-full h-full rounded-2xl sm:rounded-3xl border border-zinc-700/60 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.15)] flex overflow-hidden backdrop-blur-xl transition-all duration-500 ${
-              isFlipping ? "opacity-90 scale-[0.99]" : "opacity-100 scale-100"
-            }`}
+            className="relative w-full h-full"
+            style={{
+              transformStyle: "preserve-3d",
+            }}
           >
             {/* -----------------------------------------------------------------
-                PAGE 1: LEFT PAGE VIEW ("image regarding the designation")
+                LEFT WING (Angled forward by +12deg around center spine)
             ------------------------------------------------------------------ */}
-            <div className="w-full sm:w-1/2 h-full relative p-4 sm:p-6 lg:p-7 flex flex-col justify-between bg-gradient-to-br from-[#1b2232] via-[#161c28] to-[#121620] border-r border-black/80 overflow-hidden">
-              {/* Spine Crease Inner Shadow on Right Edge of Left Page */}
-              <div className="absolute right-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-l from-black/60 via-black/25 to-transparent pointer-events-none z-20" />
+            <div
+              className="absolute top-0 bottom-0 left-0 w-full sm:w-1/2 rounded-2xl sm:rounded-l-2xl sm:rounded-r-none overflow-hidden border border-zinc-700/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] z-20"
+              style={{
+                transformOrigin: "right center",
+                transform: "rotateY(12deg)",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              {/* If flipping backward (prev), show the newly incoming Left page underneath */}
+              {isFlipping && flipDirection === "prev"
+                ? renderLeftPage(experiencesData[targetIndex])
+                : renderLeftPage(experiencesData[activeIndex])}
 
-              {/* Left Page Top Ribbon: Category Pill & Chapter Index */}
-              <div className="relative z-10 flex items-center justify-between pb-2 border-b border-zinc-800/80">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-md bg-zinc-800/90 border border-zinc-700/80 flex items-center justify-center text-red-500">
-                    <Binary className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[10px] sm:text-[11px] font-mono tracking-wider text-zinc-300 font-semibold uppercase">
-                    {currentExperience.focusArea}
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                  Page {currentExperience.pageNumber}
-                </span>
-              </div>
+              {/* Dynamic shadow that darkens left wing as page turns and lands over it */}
+              <div
+                className="absolute inset-0 bg-black pointer-events-none z-30 transition-opacity duration-1000 ease-in-out"
+                style={{
+                  opacity:
+                    isFlipping && flipDirection === "next" && flipProgress
+                      ? 0.4
+                      : 0,
+                }}
+              />
+            </div>
 
-              {/* Main Visual Image Area: "image regarding the designation" */}
-              <div className="relative z-10 flex-1 my-3 sm:my-4 rounded-xl sm:rounded-2xl overflow-hidden border border-zinc-700/80 shadow-[0_10px_25px_rgba(0,0,0,0.6)] bg-zinc-900 group">
-                {/* Fallback stylized artwork / image */}
-                {!imageError[currentExperience.id] ? (
-                  <img
-                    src={currentExperience.image}
-                    alt={currentExperience.imageAlt}
-                    onError={() =>
-                      setImageError((prev) => ({
-                        ...prev,
-                        [currentExperience.id]: true,
-                      }))
-                    }
-                    className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+            {/* -----------------------------------------------------------------
+                RIGHT WING (Angled forward by -12deg around center spine)
+            ------------------------------------------------------------------ */}
+            <div
+              className="hidden sm:block absolute top-0 bottom-0 right-0 w-1/2 rounded-r-2xl overflow-hidden border border-zinc-700/70 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] z-20"
+              style={{
+                transformOrigin: "left center",
+                transform: "rotateY(-12deg)",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              {/* If flipping forward (next), reveal the newly incoming Right page underneath immediately */}
+              {isFlipping && flipDirection === "next"
+                ? renderRightPage(experiencesData[targetIndex])
+                : renderRightPage(experiencesData[activeIndex])}
+
+              {/* Dynamic shadow on right wing while page lifts up */}
+              <div
+                className="absolute inset-0 bg-black pointer-events-none z-30 transition-opacity duration-1000 ease-in-out"
+                style={{
+                  opacity:
+                    isFlipping && flipDirection === "prev" && flipProgress
+                      ? 0.4
+                      : 0,
+                }}
+              />
+            </div>
+
+            {/* -----------------------------------------------------------------
+                5. THE 2-SECOND 3D REAL PAGE TURN LEAF
+            ------------------------------------------------------------------ */}
+            {isFlipping && (
+              <div
+                className="hidden sm:block absolute top-0 bottom-0 w-1/2 pointer-events-none z-40"
+                style={{
+                  left: flipDirection === "next" ? "50%" : "0%",
+                  transformOrigin:
+                    flipDirection === "next" ? "left center" : "right center",
+                  transformStyle: "preserve-3d",
+                  transition:
+                    "transform 2000ms cubic-bezier(0.34, 0.04, 0.22, 1.0)",
+                  transform:
+                    flipDirection === "next"
+                      ? flipProgress
+                        ? "rotateY(-168deg)" // Lands flush on Left wing (+12deg)
+                        : "rotateY(-12deg)"  // Starts on Right wing (-12deg)
+                      : flipProgress
+                        ? "rotateY(168deg)"   // Lands flush on Right wing (-12deg)
+                        : "rotateY(12deg)",   // Starts on Left wing (+12deg)
+                }}
+              >
+                {/* FRONT FACE of turning leaf (visible during 0deg -> 90deg) */}
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(0deg)",
+                  }}
+                >
+                  {flipDirection === "next"
+                    ? renderRightPage(experiencesData[activeIndex])
+                    : renderLeftPage(experiencesData[activeIndex])}
+
+                  {/* Dynamic peeling light reflection sheen across turning page */}
+                  <div
+                    className="absolute inset-0 pointer-events-none z-40 transition-opacity duration-1000"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,0.5) 100%)",
+                      opacity: flipProgress ? 0.7 : 0,
+                    }}
                   />
-                ) : (
-                  /* Elegant Fallback Graphic Blueprint if local image isn't generated yet */
-                  <div className="w-full h-full flex flex-col justify-between p-5 bg-gradient-to-br from-zinc-900 via-[#181f2d] to-[#0f141f]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-red-400 bg-red-950/60 px-2 py-0.5 rounded border border-red-900/60 font-semibold">
-                        {currentExperience.designationBadge}
-                      </span>
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                    </div>
+                </div>
 
-                    <div className="flex flex-col gap-2 my-auto text-center items-center py-4">
-                      <div className="w-14 h-14 rounded-2xl bg-zinc-800/90 border border-zinc-700 flex items-center justify-center text-red-400 shadow-lg">
-                        <GraduationCap className="w-7 h-7" />
-                      </div>
-                      <h4 className="font-editorial text-lg font-bold text-white tracking-wide">
-                        {currentExperience.designation}
-                      </h4>
-                      <p className="text-xs text-zinc-400 font-editorial-body max-w-xs italic">
-                        "{currentExperience.quote}"
-                      </p>
-                    </div>
+                {/* BACK FACE of turning leaf (visible during 90deg -> 180deg) */}
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
+                  style={{
+                    backfaceVisibility: "hidden",
+                    WebkitBackfaceVisibility: "hidden",
+                    transform: "rotateY(180deg)",
+                  }}
+                >
+                  {flipDirection === "next"
+                    ? renderLeftPage(experiencesData[targetIndex])
+                    : renderRightPage(experiencesData[targetIndex])}
 
-                    <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-2 border-t border-zinc-800/80">
-                      <span>{currentExperience.company} • Hyderabad</span>
-                      <span>{currentExperience.period}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Subtle Image Vignette Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/25 pointer-events-none" />
-
-                {/* Designation Banner Overlay on bottom of Left Image */}
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 px-3 py-2 rounded-lg bg-black/80 backdrop-blur-md border border-zinc-700/70 text-left pointer-events-none">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono uppercase tracking-widest text-red-400 font-bold">
-                      {currentExperience.designationBadge}
-                    </span>
-                    <span className="text-[9px] font-mono text-zinc-400">
-                      {currentExperience.period}
-                    </span>
-                  </div>
-                  <div className="text-xs font-semibold text-white truncate mt-0.5">
-                    {currentExperience.designation}
-                  </div>
+                  {/* Settling shadow as back face comes down */}
+                  <div
+                    className="absolute inset-0 pointer-events-none z-40 transition-opacity duration-1000"
+                    style={{
+                      background:
+                        "linear-gradient(225deg, rgba(0,0,0,0.5) 0%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.1) 100%)",
+                      opacity: flipProgress ? 0.3 : 0.8,
+                    }}
+                  />
                 </div>
               </div>
-
-              {/* Left Page Footer: Chapter Kicker */}
-              <div className="relative z-10 flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1">
-                <span>Rohith Vallepu Portfolio</span>
-                <span className="text-zinc-400">{currentExperience.company}</span>
-              </div>
-            </div>
+            )}
 
             {/* -----------------------------------------------------------------
-                CENTER SPINE CREASE & 3D BINDING DIVIDER
+                6. CENTER SPINE GUTTER & CRIMSON SATIN RIBBON BOOKMARK
             ------------------------------------------------------------------ */}
-            <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-4 z-30 pointer-events-none hidden sm:flex items-center justify-center">
-              {/* Dark spine fold line */}
-              <div className="w-[1.5px] h-full bg-black/80 shadow-[0_0_8px_rgba(0,0,0,0.9)]" />
-              {/* Top & Bottom binding notch highlights */}
-              <div className="absolute top-0 w-2.5 h-1 bg-zinc-800/90 rounded-b-sm" />
-              <div className="absolute bottom-0 w-2.5 h-1 bg-zinc-800/90 rounded-t-sm" />
-            </div>
+            {/* Center Gutter Crease Shadow */}
+            <div
+              className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-8 z-30 pointer-events-none hidden sm:block"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.95) 45%, rgba(0,0,0,1) 50%, rgba(0,0,0,0.95) 55%, rgba(0,0,0,0.7) 100%)",
+              }}
+            />
 
-            {/* -----------------------------------------------------------------
-                PAGE 2: RIGHT PAGE VIEW (Strictly following user's specifications:
-                "top left will be company name and top right location,
-                 after that designation and description about that job")
-            ------------------------------------------------------------------ */}
-            <div className="hidden sm:flex w-1/2 h-full relative p-5 sm:p-7 lg:p-8 flex-col justify-between bg-gradient-to-bl from-[#1c2334] via-[#161c28] to-[#121622] text-left overflow-y-auto custom-scrollbar">
-              {/* Spine Crease Inner Shadow on Left Edge of Right Page */}
-              <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-14 bg-gradient-to-r from-black/60 via-black/25 to-transparent pointer-events-none z-20" />
+            {/* Top and Bottom Binding Headbands */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-1.5 bg-gradient-to-r from-red-800 via-amber-400 to-red-800 rounded-b-sm z-35 hidden sm:block pointer-events-none shadow-sm" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-1.5 bg-gradient-to-r from-red-800 via-amber-400 to-red-800 rounded-t-sm z-35 hidden sm:block pointer-events-none shadow-sm" />
 
-              {/* Upper Section */}
-              <div className="relative z-10 flex flex-col">
-                {/* 1. TOP ROW: Top Left Company Name & Top Right Location */}
-                <div className="flex items-center justify-between pb-3 border-b border-zinc-800/80">
-                  {/* TOP LEFT: Company Name */}
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-red-500 shadow-sm">
-                      <Building2 className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col">
-                      <h2 className="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight">
-                        {currentExperience.company}
-                      </h2>
-                      <span className="text-[10px] font-mono text-zinc-400">
-                        {currentExperience.companyTag}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* TOP RIGHT: Location */}
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/90 border border-zinc-800 text-zinc-300 font-mono text-xs shadow-inner">
-                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                    <span className="font-medium text-[11px]">
-                      {currentExperience.location}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 2. AFTER THAT: Designation Row */}
-                <div className="mt-3.5 mb-2.5 flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                      <span>{currentExperience.designation}</span>
-                    </h3>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-[10.5px] font-mono text-zinc-400">
-                    <span className="text-red-400 font-medium">
-                      {currentExperience.type}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 text-zinc-400">
-                      <Calendar className="w-3 h-3 text-zinc-500" />
-                      <span>{currentExperience.period}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* 3. AFTER THAT: Description About That Job */}
-                <div className="flex flex-col gap-2 my-2 text-zinc-300 text-xs sm:text-[12.5px] leading-relaxed">
-                  {currentExperience.description.map((paragraph, pIdx) => (
-                    <p key={pIdx} className="font-sans text-zinc-300/95">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-
-                {/* Key Responsibilities Checklist */}
-                <div className="mt-2 pt-2 border-t border-zinc-800/80 flex flex-col gap-1.5">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                    Key Highlights & Responsibilities:
-                  </span>
-                  <div className="grid grid-cols-1 gap-1.5">
-                    {currentExperience.keyHighlights.slice(0, 3).map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-2 text-[11px] sm:text-xs text-zinc-300"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                        <span className="leading-tight">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Lower Section: Tech Stack Badges & Page Footer */}
-              <div className="relative z-10 pt-3 border-t border-zinc-800/80 flex flex-col gap-2.5">
-                {/* Tech Pills */}
-                <div className="flex flex-wrap gap-1.5">
-                  {currentExperience.skills.slice(0, 6).map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-2 py-0.5 rounded-md bg-zinc-900/90 border border-zinc-800 text-[10px] font-mono text-zinc-300 shadow-sm"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Right Page Footer: Chapter Label & Page Index */}
-                <div className="flex items-center justify-between text-[10.5px] font-mono text-zinc-500 pt-1">
-                  <span>{currentExperience.chapterTitle}</span>
-                  <span className="font-bold text-zinc-400">
-                    {activeIndex + 1} / {totalExperiences}
-                  </span>
-                </div>
-              </div>
-            </div>
+            {/* Silk Ribbon Bookmark hanging from spine past bottom edge */}
+            <div
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-3 sm:w-3.5 z-35 pointer-events-none hidden sm:block"
+              style={{
+                height: "calc(100% + 22px)",
+                background:
+                  "linear-gradient(180deg, #dc2626 0%, #b91c1c 70%, #991b1b 100%)",
+                boxShadow: "2px 4px 10px rgba(0,0,0,0.7)",
+                clipPath: "polygon(0 0, 100% 0, 100% 92%, 50% 100%, 0 92%)",
+              }}
+            />
           </div>
         </div>
       </div>
 
       {/* =========================================================================
-          NAVIGATION CONTROLS BELOW DESIGN (Matching Project Section Structure)
-          "below the design of the experience i want navigation to the left and right,
-           like in the project section."
+          BOTTOM NAVIGATION CONTROLS (Like in the Project section, 2s 3D Page Turn)
       ========================================================================== */}
-      <div className="relative z-30 mb-20 sm:mb-24 flex flex-col items-center gap-2 px-4">
+      <div className="relative z-30 my-4 sm:my-6 flex flex-col items-center gap-2.5 px-4">
         {/* Glassmorphic Navigation Capsule */}
-        <div className="inline-flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-black/60 backdrop-blur-2xl border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.2)]">
-          {/* Previous Page Arrow Button */}
+        <div className="inline-flex items-center gap-2 sm:gap-3 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full bg-black/60 backdrop-blur-2xl border border-zinc-700/80 shadow-[0_12px_36px_rgba(0,0,0,0.6),inset_0_1px_2px_rgba(255,255,255,0.15)]">
+          {/* Previous Page Button */}
           <button
             onClick={handlePrev}
-            type="button"
             disabled={isFlipping}
-            aria-label="Previous experience page"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/25 text-white border border-white/20 flex items-center justify-center active:scale-95 transition-all cursor-pointer group disabled:opacity-40"
+            type="button"
+            aria-label="Turn to previous experience page"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white border border-zinc-600/60 flex items-center justify-center active:scale-95 transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-0.5" />
           </button>
 
-          {/* Center Info Pill */}
-          <div className="flex items-center gap-2.5 px-3 min-w-[170px] sm:min-w-[220px] text-left">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-zinc-900 border border-white/30 flex items-center justify-center text-red-500 shrink-0 font-bold font-mono text-xs">
-              {currentExperience.company.slice(0, 2).toUpperCase()}
+          {/* Center Capsule Chapter Info */}
+          <div className="flex items-center gap-2.5 px-3 max-w-[220px] sm:max-w-[300px] text-left">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg overflow-hidden border border-zinc-700 shrink-0 bg-zinc-900 flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="truncate">
               <div className="text-xs sm:text-sm font-semibold text-white truncate">
                 {currentExperience.company}
               </div>
-              <div className="text-[10px] sm:text-[11px] font-mono text-white/70">
-                Chapter {activeIndex + 1} of {totalExperiences}
+              <div className="text-[10px] sm:text-[11px] font-mono text-zinc-400">
+                Chapter {activeIndex + 1} of {totalExperiences} · Turn Page
               </div>
             </div>
           </div>
 
-          {/* Next Page Arrow Button */}
+          {/* Next Page Button */}
           <button
             onClick={handleNext}
-            type="button"
             disabled={isFlipping}
-            aria-label="Next experience page"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/25 text-white border border-white/20 flex items-center justify-center active:scale-95 transition-all cursor-pointer group disabled:opacity-40"
+            type="button"
+            aria-label="Turn to next experience page"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-white border border-zinc-600/60 flex items-center justify-center active:scale-95 transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-0.5" />
           </button>
         </div>
 
-        {/* Page Indicator Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-0.5">
-          {experiencesData.map((_, idx) => (
+        {/* Experience Page Progress Dots */}
+        <div className="flex items-center justify-center gap-1.5">
+          {experiencesData.map((exp, idx) => (
             <button
-              key={idx}
+              key={exp.id}
               type="button"
+              disabled={isFlipping}
               onClick={() => {
-                if (isFlipping || activeIndex === idx) return;
-                setFlipDirection(idx > activeIndex ? "next" : "prev");
-                setIsFlipping(true);
-                setTimeout(() => {
-                  setActiveIndex(idx);
-                  setTimeout(() => setIsFlipping(false), 300);
-                }, 250);
+                if (idx !== activeIndex) {
+                  handleTurnPage(idx > activeIndex ? "next" : "prev");
+                }
               }}
-              aria-label={`Jump to page ${idx + 1}`}
+              aria-label={`Go to chapter ${idx + 1}: ${exp.company}`}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 activeIndex === idx
-                  ? "w-6 bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
-                  : "w-2 bg-white/30 hover:bg-white/60"
+                  ? "w-6 bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]"
+                  : "w-2 bg-zinc-600 hover:bg-zinc-400"
               }`}
             />
           ))}
@@ -622,4 +762,3 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
 };
 
 export default ExperienceSection;
-
