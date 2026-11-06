@@ -9,7 +9,6 @@ import {
   Briefcase,
   Award,
   FolderKanban,
-  User,
   Send,
   ArrowLeft,
   Sparkles,
@@ -85,19 +84,6 @@ const sectionConfig: Record<Exclude<NavTab, "home">, SectionMeta> = {
       "Developer Tools",
       "Interactive Platforms",
       "API Integrations",
-    ],
-  },
-  about: {
-    title: "ABOUT VALLEPU ROHITH",
-    subtitle: "Software Developer, Lifelong Learner & Instructor",
-    icon: User,
-    description:
-      "Driven by a passion to transform complex ideas into elegant reality through code, education, and thoughtful digital engineering.",
-    previewTags: [
-      "Software Developer",
-      "Tech Educator",
-      "Problem Solver",
-      "Lifelong Learner",
     ],
   },
   contact: {

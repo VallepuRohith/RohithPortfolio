@@ -52,7 +52,7 @@ export const HeroHome: React.FC = () => {
         <div className="absolute bottom-[14%] sm:bottom-[12%] lg:bottom-[13%] right-4 sm:right-8 lg:right-14 xl:right-20 z-20 flex flex-col items-end text-right pointer-events-none">
           {/* Secondary Tagline on top of Rohith */}
           <p className="mb-1 sm:mb-2 text-[10px] sm:text-xs tracking-[0.24em] uppercase text-[#5a738e] font-medium pr-1">
-            Problem Solver · Lifelong Learner
+            Problem Solver
           </p>
 
           {/* Large Editorial Name: ROHITH */}
@@ -71,7 +71,7 @@ export const HeroHome: React.FC = () => {
 
         {/* Minimal Bottom Editorial Coordinates / Credit */}
         <div className="hidden lg:flex absolute bottom-2 left-12 z-20 items-center gap-3 text-[11px] tracking-[0.2em] uppercase text-[#64748b]/80 font-medium">
-          <span>Edition 2026</span>
+          <span>Edition 2004</span>
           <span className="w-1.5 h-1.5 rounded-full bg-[#64748b]/40" />
           <span>Curated Portfolio</span>
         </div>

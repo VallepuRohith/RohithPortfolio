@@ -12,10 +12,9 @@ export function App() {
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "") as NavTab;
       const validTabs: NavTab[] = [
-        "home",
-        "about",
         "skills",
         "projects",
+        "home",
         "experience",
         "certifications",
         "contact",

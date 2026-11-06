@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Home,
-  User,
   BarChart3,
   FolderKanban,
   Briefcase,
@@ -10,10 +9,9 @@ import {
 } from "lucide-react";
 
 export type NavTab =
-  | "home"
-  | "about"
   | "skills"
   | "projects"
+  | "home"
   | "experience"
   | "certifications"
   | "contact";
@@ -33,32 +31,15 @@ interface NavItemConfig {
   delay: string;      // Sway animation offset phase
 }
 
-// 7 Hanging sections with physics parameters matching reference image
+// 6 Hanging sections arranged according to user specification:
+// skills, projects, home, experience, certifications, contact
 const navItems: NavItemConfig[] = [
-  {
-    id: "home",
-    label: "Home",
-    icon: Home,
-    sag: 2,
-    angle: 6.0,
-    dur: "3.8s",
-    delay: "-0.5s",
-  },
-  {
-    id: "about",
-    label: "About",
-    icon: User,
-    sag: 8,
-    angle: 4.0,
-    dur: "4.2s",
-    delay: "-1.3s",
-  },
   {
     id: "skills",
     label: "Skills",
     icon: BarChart3,
-    sag: 13,
-    angle: 2.0,
+    sag: 2,
+    angle: 6.0,
     dur: "3.6s",
     delay: "-2.1s",
   },
@@ -66,17 +47,26 @@ const navItems: NavItemConfig[] = [
     id: "projects",
     label: "Projects",
     icon: FolderKanban,
-    sag: 16,
-    angle: 0.0,
+    sag: 10,
+    angle: 3.6,
     dur: "4.5s",
     delay: "-0.9s",
+  },
+  {
+    id: "home",
+    label: "Home",
+    icon: Home,
+    sag: 16,
+    angle: 1.2,
+    dur: "3.8s",
+    delay: "-0.5s",
   },
   {
     id: "experience",
     label: "Experience",
     icon: Briefcase,
-    sag: 13,
-    angle: -2.0,
+    sag: 16,
+    angle: -1.2,
     dur: "3.9s",
     delay: "-1.6s",
   },
@@ -84,8 +74,8 @@ const navItems: NavItemConfig[] = [
     id: "certifications",
     label: "Certifications",
     icon: Award,
-    sag: 8,
-    angle: -4.0,
+    sag: 10,
+    angle: -3.6,
     dur: "4.1s",
     delay: "-2.4s",
   },

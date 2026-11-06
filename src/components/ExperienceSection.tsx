@@ -12,9 +12,7 @@ import {
   Briefcase,
   GraduationCap,
   Binary,
-  Layers,
   RotateCcw,
-  Eye,
 } from "lucide-react";
 import { NavTab } from "./NavigationDock";
 
@@ -133,76 +131,77 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   onBackToHome,
   onNavigate,
 }) => {
-  // Animation stage: "blank" (empty page) -> "popping" (first card pops up in center) -> "expanded" (rest expand from behind)
-  const [stage, setStage] = useState<"blank" | "popping" | "expanded">("blank");
-  // Full page view state: null when browsing cards, or ExperienceItem when reading full details
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  // Animation stages: "blank" -> "balloon" (rising from bottom to center) -> "expanded" (side cards slide out)
+  const [animStage, setAnimStage] = useState<"blank" | "balloon" | "expanded">("blank");
+  // Full page reading mode when user clicks "View More"
   const [selectedExperience, setSelectedExperience] = useState<ExperienceItem | null>(null);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
 
   const totalExperiences = experiencesData.length;
+  const activeExp = experiencesData[activeIndex];
+  const sideIndex = (activeIndex + 1) % totalExperiences;
+  const sideExp = experiencesData[sideIndex];
 
-  // Run the sequence when section opens:
-  // 1. Blank page initially
-  // 2. First card pops up on screen after 200ms
-  // 3. Cards expand out from the back after 950ms
-  const triggerAnimationSequence = useCallback(() => {
-    setStage("blank");
-    const popTimer = setTimeout(() => {
-      setStage("popping");
-    }, 220);
+  // Balloon Rising & Card Expansion Animation Sequence
+  // "once user clicks on experience button the first card will pop from the bottom (like a balloon moving from bottom to little bit upwards) to middle. and rest of the cards come from the first card."
+  const startAnimationSequence = useCallback(() => {
+    setAnimStage("blank");
+
+    const balloonTimer = setTimeout(() => {
+      setAnimStage("balloon");
+    }, 120);
 
     const expandTimer = setTimeout(() => {
-      setStage("expanded");
-    }, 950);
+      setAnimStage("expanded");
+    }, 900);
 
     return () => {
-      clearTimeout(popTimer);
+      clearTimeout(balloonTimer);
       clearTimeout(expandTimer);
     };
   }, []);
 
   useEffect(() => {
-    const cleanup = triggerAnimationSequence();
+    const cleanup = startAnimationSequence();
     return cleanup;
-  }, [triggerAnimationSequence]);
+  }, [startAnimationSequence]);
 
-  // Navigate to previous or next experience inside full page mode
-  const handleNextExperience = () => {
-    if (!selectedExperience) return;
-    const currentIndex = experiencesData.findIndex((e) => e.id === selectedExperience.id);
-    const nextIndex = (currentIndex + 1) % totalExperiences;
-    setSelectedExperience(experiencesData[nextIndex]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handleNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % totalExperiences);
+  }, [totalExperiences]);
 
-  const handlePrevExperience = () => {
-    if (!selectedExperience) return;
-    const currentIndex = experiencesData.findIndex((e) => e.id === selectedExperience.id);
-    const prevIndex = (currentIndex - 1 + totalExperiences) % totalExperiences;
-    setSelectedExperience(experiencesData[prevIndex]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const handlePrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + totalExperiences) % totalExperiences);
+  }, [totalExperiences]);
 
-  // Keyboard support: Escape exits full page mode; Left/Right cycles roles
+  // Keyboard navigation support
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (selectedExperience) {
         if (e.key === "Escape") {
           setSelectedExperience(null);
         } else if (e.key === "ArrowRight") {
-          handleNextExperience();
+          const idx = experiencesData.findIndex((x) => x.id === selectedExperience.id);
+          setSelectedExperience(experiencesData[(idx + 1) % totalExperiences]);
         } else if (e.key === "ArrowLeft") {
-          handlePrevExperience();
+          const idx = experiencesData.findIndex((x) => x.id === selectedExperience.id);
+          setSelectedExperience(experiencesData[(idx - 1 + totalExperiences) % totalExperiences]);
+        }
+      } else {
+        if (e.key === "ArrowRight") {
+          handleNext();
+        } else if (e.key === "ArrowLeft") {
+          handlePrev();
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedExperience, totalExperiences]);
+  }, [selectedExperience, handleNext, handlePrev, totalExperiences]);
 
   // =========================================================================
-  // VIEW MODE 1: FULL PAGE MODE (When user clicks "View More" on any card)
+  // VIEW MODE 1: FULL PAGE MODE (When user clicks "View More")
   // =========================================================================
   if (selectedExperience) {
     const currentIdx = experiencesData.findIndex((e) => e.id === selectedExperience.id);
@@ -218,7 +217,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
         <div className="relative z-10 max-w-6xl mx-auto flex flex-col gap-8 sm:gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Top Bar: Back Button & Quick Role Switcher */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800/80">
-            {/* User Requirement: Click back button to be back to same experience section */}
             <button
               type="button"
               onClick={() => setSelectedExperience(null)}
@@ -236,7 +234,11 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
               <div className="inline-flex items-center gap-1 bg-zinc-900/90 border border-zinc-800 rounded-full p-1">
                 <button
                   type="button"
-                  onClick={handlePrevExperience}
+                  onClick={() => {
+                    const prevIdx = (currentIdx - 1 + totalExperiences) % totalExperiences;
+                    setSelectedExperience(experiencesData[prevIdx]);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                   aria-label="Previous Experience"
                   className="w-7 h-7 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
@@ -244,7 +246,11 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={handleNextExperience}
+                  onClick={() => {
+                    const nextIdx = (currentIdx + 1) % totalExperiences;
+                    setSelectedExperience(experiencesData[nextIdx]);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
                   aria-label="Next Experience"
                   className="w-7 h-7 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
@@ -268,7 +274,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
               </span>
             </div>
 
-            {/* Prominent Designation Title */}
             <h1 className="font-editorial text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-tight mt-1">
               {selectedExperience.designation}
             </h1>
@@ -282,7 +287,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Left Column: Visual Card, Quote & Highlights */}
             <div className="lg:col-span-5 flex flex-col gap-6">
-              {/* Image Frame */}
               <div className="relative rounded-3xl overflow-hidden border border-zinc-700/80 shadow-[0_20px_50px_rgba(0,0,0,0.8)] bg-zinc-950 group">
                 {!imageError[selectedExperience.id] ? (
                   <img
@@ -345,7 +349,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
 
             {/* Right Column: Full In-Depth Description & Competencies */}
             <div className="lg:col-span-7 flex flex-col gap-6">
-              {/* Detailed Description Section */}
               <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/70 border border-zinc-800/80 backdrop-blur-md flex flex-col gap-5">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
                   <Briefcase className="w-4 h-4 text-emerald-400" />
@@ -361,7 +364,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 </div>
               </div>
 
-              {/* Skills & Technologies Taught / Used */}
               <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900/70 border border-zinc-800/80 backdrop-blur-md flex flex-col gap-4">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
                   <Binary className="w-4 h-4 text-emerald-400" />
@@ -378,32 +380,6 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                     </span>
                   ))}
                 </div>
-              </div>
-
-              {/* Alternate Role Preview Banner */}
-              <div className="p-6 rounded-3xl bg-gradient-to-r from-zinc-900 to-[#121927] border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
-                    Other Experience
-                  </div>
-                  <div className="text-base font-bold text-white font-editorial mt-0.5">
-                    {experiencesData[currentIdx === 0 ? 1 : 0].designation}
-                  </div>
-                  <div className="text-xs text-zinc-400 mt-0.5">
-                    {experiencesData[currentIdx === 0 ? 1 : 0].company} • {experiencesData[currentIdx === 0 ? 1 : 0].location}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedExperience(experiencesData[currentIdx === 0 ? 1 : 0]);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className="px-4 py-2 rounded-full text-xs font-semibold bg-emerald-400 hover:bg-emerald-300 text-zinc-950 transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
-                >
-                  View Role →
-                </button>
               </div>
 
               {/* Bottom Back Button */}
@@ -425,193 +401,251 @@ export const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   }
 
   // =========================================================================
-  // VIEW MODE 2: POP-UP & HORIZONTAL EXPANSION SPREAD (User Request & References)
+  // VIEW MODE 2: PLANE STAGE WITH 2-PART CARD & SIDE VERTICAL BOX
+  // User Requirement:
+  // 1. "do not add any text in the experience section... like in the certifications sections, my experience should also be plane, just cards."
+  // 2. "so the card contains 2 part, left part is picture and the right part is summary of that designation."
+  // 3. "to know more about my designations user will click on view more button."
+  // 4. "once user clicks on experience button the first card will pop from the buttom(imagine like a ballon moving from bottom to little bit upwards) to middle. and rest of the cards come from the first card."
+  // 5. "so the side card appears as a vertical box, i want the same pattern"
   // =========================================================================
   return (
-    <div className="relative min-h-screen w-full bg-[#0d121c] text-white flex flex-col justify-between items-center select-none pt-28 sm:pt-32 pb-14 sm:pb-16 px-4 sm:px-8 overflow-x-hidden overflow-y-auto">
-      {/* Soft Studio Lighting Backdrop */}
+    <div className="relative min-h-screen w-full bg-[#0b0e15] text-white flex flex-col justify-center items-center select-none pt-24 sm:pt-28 pb-12 sm:pb-16 px-4 sm:px-8 overflow-x-hidden overflow-y-auto">
+      {/* Soft Ambient Aurora Backdrop (Matching Reference Picture Vibe) */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[750px] bg-emerald-600/5 rounded-full blur-[160px]" />
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-sky-500/5 rounded-full blur-[140px]" />
+        {/* Soft violet/blue gradient wash */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[700px] bg-gradient-to-r from-blue-600/15 via-purple-600/15 to-pink-500/10 rounded-full blur-[150px]" />
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[400px] bg-sky-500/10 rounded-full blur-[130px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[450px] bg-indigo-500/15 rounded-full blur-[140px]" />
       </div>
 
-      {/* Top Eyebrow / Section Title */}
-      <div className="relative z-10 text-center mb-4 sm:mb-6 max-w-xl mx-auto px-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 mb-2">
-          <Layers className="w-3.5 h-3.5" />
-          <span>Professional Experience</span>
-        </div>
-        <h2 className="font-editorial text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
-          Career Journey &amp; Instruction
-        </h2>
-        <p className="text-xs sm:text-sm text-zinc-400 mt-1 font-editorial-body">
-          Click <span className="text-white font-medium">View More</span> on any card to read full details
-        </p>
-      </div>
-
-      {/* =========================================================================
-          THE STAGE: BLANK -> POPPED (Deck Stack) -> EXPANDED (Fanned Cards Arc)
-      ========================================================================== */}
-      <div className="relative z-20 w-full max-w-5xl flex-1 flex items-center justify-center my-auto min-h-[460px] sm:min-h-[520px] overflow-visible">
-        {/* If stage === "blank", page is blank (very short delay per user request) */}
-        {stage === "blank" && (
-          <div className="w-full flex items-center justify-center text-zinc-600 text-xs font-mono">
-            {/* Blank slate */}
+      {/* Main Interactive Stage — Pure cards with no extra header text */}
+      <div className="relative z-10 w-full max-w-6xl flex flex-col items-center justify-center my-auto">
+        <div className="relative w-full flex items-center justify-center min-h-[440px] sm:min-h-[480px]">
+          {/* Subtle Horizontal Connector Line with Nodes (Matching reference picture) */}
+          <div
+            className={`hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-[960px] items-center justify-between pointer-events-none z-0 transition-opacity duration-700 ${
+              animStage === "expanded" ? "opacity-40" : "opacity-0"
+            }`}
+          >
+            <div className="w-full h-[1.5px] bg-gradient-to-r from-transparent via-white/40 to-transparent relative">
+              {/* Connector dots */}
+              <span className="absolute left-[12%] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]" />
+              <span className="absolute right-[12%] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]" />
+            </div>
           </div>
-        )}
 
-        {/* When stage is "popping" or "expanded", cards are rendered with fluid physics */}
-        {stage !== "blank" && (
-          <div className="relative w-full flex items-center justify-center min-h-[460px] sm:min-h-[520px]">
-            {experiencesData.map((exp, index) => {
-              const isFirstCard = index === 0;
-              const isHovered = hoveredIndex === index;
+          {/* Side Card Left (Vertical Box for previous experience if multi-card or mirrored) */}
+          <div
+            onClick={handlePrev}
+            title={`Switch to ${sideExp.designation}`}
+            style={{
+              transform:
+                animStage === "expanded"
+                  ? "translateX(0px) scale(1)"
+                  : "translateX(140px) scale(0.6)",
+              opacity: animStage === "expanded" ? 1 : 0,
+              transition: "all 0.75s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+            className={`hidden lg:flex flex-col items-center justify-center absolute left-2 xl:left-8 z-10 cursor-pointer group select-none ${
+              animStage === "expanded" ? "pointer-events-auto" : "pointer-events-none"
+            }`}
+          >
+            {/* Vertical Card Frame (Matching Reference Image) */}
+            <div className="relative w-[78px] xl:w-[94px] h-[270px] xl:h-[320px] rounded-[26px] xl:rounded-[32px] p-1.5 bg-white shadow-[0_16px_36px_rgba(0,0,0,0.6)] border border-white/80 group-hover:scale-105 group-hover:shadow-[0_20px_45px_rgba(255,255,255,0.2)] transition-all duration-300 overflow-hidden">
+              <img
+                src={sideExp.image}
+                alt={sideExp.imageAlt}
+                className="w-full h-full object-cover object-center rounded-[20px] xl:rounded-[26px] filter brightness-95 group-hover:brightness-105 transition-all duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-[26px]" />
+              <div className="absolute bottom-3 inset-x-2 text-center">
+                <span className="text-[10px] font-mono font-semibold tracking-wider text-white uppercase bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/20">
+                  {sideExp.company}
+                </span>
+              </div>
+            </div>
+          </div>
 
-              // Calculate transformation styles for each stage:
-              // 1. POPPED STAGE: First card in center; other cards stacked directly behind it
-              // 2. EXPANDED STAGE: Cards fan out horizontally from the back of the first card
-              let transform = "";
-              let zIndex = 10;
-              let opacity = 1;
+          {/* =========================================================================
+              THE CENTER ACTIVE CARD (2 Parts: Left = Picture, Right = Summary)
+              Balloon Animation: rises up from bottom to middle like a buoyant balloon
+          ========================================================================== */}
+          <div
+            style={{
+              transform:
+                animStage === "blank"
+                  ? "translateY(180px) scale(0.65)"
+                  : "translateY(0px) scale(1)",
+              opacity: animStage === "blank" ? 0 : 1,
+              // Floating balloon physics transition
+              transition:
+                animStage === "balloon"
+                  ? "transform 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.25), opacity 0.45s ease-out"
+                  : "transform 0.5s ease-out, opacity 0.3s ease-out",
+            }}
+            className="relative z-20 w-full max-w-[760px] rounded-[28px] sm:rounded-[36px] bg-white text-zinc-950 shadow-[0_30px_80px_rgba(0,0,0,0.7),0_0_40px_rgba(255,255,255,0.12)] border border-white overflow-hidden transition-shadow duration-500 flex flex-col md:flex-row items-stretch"
+          >
+              {/* -------------------------------------------------------------
+                  PART 1: LEFT PART IS PICTURE (User Requirement)
+              -------------------------------------------------------------- */}
+              <div className="w-full md:w-[48%] p-3 sm:p-4 shrink-0 flex items-center justify-center">
+                <div className="relative w-full h-[240px] sm:h-[300px] md:h-[370px] rounded-[22px] sm:rounded-[28px] overflow-hidden bg-zinc-100 shadow-inner group/pic">
+                  {!imageError[activeExp.id] ? (
+                    <img
+                      src={activeExp.image}
+                      alt={activeExp.imageAlt}
+                      onError={() =>
+                        setImageError((prev) => ({ ...prev, [activeExp.id]: true }))
+                      }
+                      className="w-full h-full object-cover object-center transform group-hover/pic:scale-105 transition-transform duration-700 ease-out"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-zinc-800 to-zinc-900 text-white">
+                      <GraduationCap className="w-14 h-14 text-emerald-400 mb-2" />
+                      <span className="text-xs font-mono">{activeExp.company}</span>
+                    </div>
+                  )}
 
-              if (stage === "popping") {
-                if (isFirstCard) {
-                  // First card pops up prominently in center (matching reference "After 🔥")
-                  transform = "translateX(0px) translateY(0px) rotate(0deg) scale(1)";
-                  zIndex = 20;
-                  opacity = 1;
-                } else {
-                  // Other cards tucked behind first card with subtle stacked edge
-                  const rearOffset = (index - 0) * 4;
-                  transform = `translateX(${rearOffset}px) translateY(${rearOffset}px) rotate(${rearOffset * 0.8}deg) scale(0.96)`;
-                  zIndex = 10 - index;
-                  opacity = 0.95;
-                }
-              } else if (stage === "expanded") {
-                // Cards fanned out horizontally to left and right from the back of first card
-                // Index 0: to the left (-180px, -5deg); Index 1: to the right (+180px, +5deg)
-                const offset = index - (totalExperiences - 1) / 2;
-                const baseTranslateX = offset * 210; // Responsive base offset in px
-                const baseRotate = offset * 6; // Rotation angle in deg
-                const baseY = Math.abs(offset) * 8; // Gentle curve sag
+                  {/* Subtle vignette */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
-                if (isHovered) {
-                  // Card lifts, straightens, and scales up on hover
-                  transform = `translateX(${baseTranslateX}px) translateY(-16px) rotate(0deg) scale(1.05)`;
-                  zIndex = 30;
-                } else {
-                  transform = `translateX(${baseTranslateX}px) translateY(${baseY}px) rotate(${baseRotate}deg) scale(1)`;
-                  zIndex = isFirstCard ? 20 : 15;
-                }
-              }
-
-              return (
-                <div
-                  key={exp.id}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => setSelectedExperience(exp)}
-                  style={{
-                    transform,
-                    zIndex,
-                    opacity,
-                    // Spring pop-up for initial appearance, and smooth 700ms expansion
-                    transition:
-                      stage === "popping"
-                        ? "transform 0.65s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease"
-                        : "transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, z-index 0.1s ease",
-                  }}
-                  className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[270px] sm:w-[310px] md:w-[330px] h-[390px] sm:h-[440px] md:h-[470px] rounded-[28px] sm:rounded-[32px] overflow-hidden cursor-pointer select-none border border-white/20 backdrop-blur-xl group ${
-                    isHovered
-                      ? "shadow-[0_28px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(52,211,153,0.35),0_0_0_1px_rgba(255,255,255,0.4)]"
-                      : "shadow-[0_22px_45px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.15)]"
-                  }`}
-                >
-                  {/* Card Background: Visual of the role */}
-                  <div className="absolute inset-0 w-full h-full bg-zinc-950 overflow-hidden">
-                    {!imageError[exp.id] ? (
-                      <img
-                        src={exp.image}
-                        alt={exp.imageAlt}
-                        onError={() =>
-                          setImageError((prev) => ({ ...prev, [exp.id]: true }))
-                        }
-                        className="w-full h-full object-cover object-center transform group-hover:scale-108 transition-transform duration-700 ease-out"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950">
-                        <GraduationCap className="w-16 h-16 text-emerald-400 mb-2" />
-                        <span className="text-xs font-mono text-zinc-400">
-                          {exp.company}
-                        </span>
-                      </div>
-                    )}
-                    {/* Deep gradient overlay for text legibility */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/15" />
-                  </div>
-
-                  {/* Top-Right Index Pill (Matching Reference Look) */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <span className="text-[10px] font-mono text-white/90 bg-black/50 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
-                      {index + 1} / {totalExperiences}
+                  {/* Brand pill emblem in bottom corner (matching RBL. logo in reference) */}
+                  <div className="absolute bottom-3 left-3 z-10">
+                    <span className="text-[11px] font-mono font-bold tracking-wider text-white uppercase bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/30 shadow-md">
+                      {activeExp.company}
                     </span>
-                  </div>
-
-                  {/* Top-Left Company Mini Badge */}
-                  <div className="absolute top-4 left-4 z-10">
-                    <span className="text-[10px] font-mono font-semibold tracking-wider uppercase text-emerald-300 bg-emerald-950/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-emerald-500/30">
-                      {exp.company}
-                    </span>
-                  </div>
-
-                  {/* Card Content — USER REQUIREMENT:
-                      1. "on the card there should only the title of the designation"
-                      2. "if user want to see more about the designation(like full information), user will click on view more button"
-                  */}
-                  <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 z-10 flex flex-col justify-end text-left">
-                    {/* 1. ONLY TITLE OF THE DESIGNATION */}
-                    <h3 className="font-editorial text-xl sm:text-2xl font-bold tracking-wide text-white leading-tight drop-shadow-md mb-4 text-left">
-                      {exp.designation}
-                    </h3>
-
-                    {/* 2. VIEW MORE BUTTON */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedExperience(exp);
-                      }}
-                      className="w-full py-2.5 sm:py-3 px-4 rounded-full text-xs sm:text-[13px] font-semibold bg-white text-zinc-950 hover:bg-emerald-400 hover:text-black transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer group/btn active:scale-95"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>View More</span>
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
-                    </button>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+              {/* -------------------------------------------------------------
+                  PART 2: RIGHT PART IS SUMMARY OF THAT DESIGNATION (User Requirement)
+                  "to know more about my designations user will click on view more button"
+              -------------------------------------------------------------- */}
+              <div className="w-full md:w-[52%] p-6 sm:p-8 md:pl-4 flex flex-col justify-between text-left">
+                {/* Top: Header metadata */}
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[11px] font-mono font-semibold tracking-wider text-emerald-700 uppercase bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      {activeExp.location}
+                    </span>
+                    <span className="text-[11px] font-mono text-zinc-400 font-medium">
+                      {activeExp.period}
+                    </span>
+                  </div>
+
+                  {/* Designation Title */}
+                  <h3 className="font-editorial text-2xl sm:text-[1.75rem] font-bold text-zinc-950 tracking-tight leading-snug mt-1 mb-3">
+                    {activeExp.designation}
+                  </h3>
+
+                  {/* Summary of that designation */}
+                  <p className="text-xs sm:text-sm text-zinc-600 font-editorial-body leading-relaxed">
+                    “{activeExp.summary}”
+                  </p>
+                </div>
+
+                {/* Bottom: View More Button */}
+                <div className="pt-5 mt-auto border-t border-zinc-100 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedExperience(activeExp)}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold bg-zinc-950 text-white hover:bg-emerald-500 hover:text-black transition-all duration-300 shadow-lg cursor-pointer group/btn active:scale-95"
+                  >
+                    <span>View More</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+
+                  <span className="text-[11px] font-mono text-zinc-400">
+                    {activeIndex + 1} of {totalExperiences}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Side Card Right (Vertical Box for next experience, matching reference image) */}
+            <div
+              onClick={handleNext}
+              title={`Switch to ${sideExp.designation}`}
+              style={{
+                transform:
+                  animStage === "expanded"
+                    ? "translateX(0px) scale(1)"
+                    : "translateX(-140px) scale(0.6)",
+                opacity: animStage === "expanded" ? 1 : 0,
+                transition: "all 0.75s cubic-bezier(0.16, 1, 0.3, 1)",
+              }}
+              className={`hidden lg:flex flex-col items-center justify-center absolute right-2 xl:right-8 z-10 cursor-pointer group select-none ${
+                animStage === "expanded" ? "pointer-events-auto" : "pointer-events-none"
+              }`}
+            >
+              {/* Vertical Card Frame (Matching Reference Image) */}
+              <div className="relative w-[78px] xl:w-[94px] h-[270px] xl:h-[320px] rounded-[26px] xl:rounded-[32px] p-1.5 bg-white shadow-[0_16px_36px_rgba(0,0,0,0.6)] border border-white/80 group-hover:scale-105 group-hover:shadow-[0_20px_45px_rgba(255,255,255,0.2)] transition-all duration-300 overflow-hidden">
+                <img
+                  src={sideExp.image}
+                  alt={sideExp.imageAlt}
+                  className="w-full h-full object-cover object-center rounded-[20px] xl:rounded-[26px] filter brightness-95 group-hover:brightness-105 transition-all duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent rounded-[26px]" />
+                <div className="absolute bottom-3 inset-x-2 text-center">
+                  <span className="text-[10px] font-mono font-semibold tracking-wider text-white uppercase bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/20">
+                    {sideExp.company}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* =========================================================================
-          BOTTOM CONTROLS: REPLAY ANIMATION & HELPER
-      ========================================================================== */}
-      <div className="relative z-20 mt-4 sm:mt-6 flex flex-col items-center gap-2">
-        <button
-          type="button"
-          onClick={triggerAnimationSequence}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono text-zinc-400 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 transition-all cursor-pointer backdrop-blur-md active:scale-95 shadow-sm"
-          title="Replay pop-up and horizontal card expansion"
-        >
-          <RotateCcw className="w-3 h-3" />
-          <span>Replay Expansion</span>
-        </button>
+        {/* Bottom Pagination Dots (Matching reference picture • — •) & Replay Icon */}
+        <div className="mt-8 flex items-center justify-center gap-3">
+          {/* Arrow Left */}
+          <button
+            type="button"
+            onClick={handlePrev}
+            aria-label="Previous Experience"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 border border-white/15"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
 
-        <span className="text-[11px] font-mono text-zinc-500">
-          Showing {totalExperiences} roles in Hyderabad
-        </span>
+          {/* Pagination Dots */}
+          <div className="flex items-center gap-2">
+            {experiencesData.map((exp, idx) => (
+              <button
+                key={exp.id}
+                type="button"
+                onClick={() => setActiveIndex(idx)}
+                aria-label={`Jump to ${exp.company}`}
+                className={`transition-all duration-300 cursor-pointer ${
+                  activeIndex === idx
+                    ? "w-7 h-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.7)]"
+                    : "w-2 h-2 rounded-full bg-white/35 hover:bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Arrow Right */}
+          <button
+            type="button"
+            onClick={handleNext}
+            aria-label="Next Experience"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer active:scale-95 border border-white/15"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          {/* Replay Balloon Animation button */}
+          <button
+            type="button"
+            onClick={startAnimationSequence}
+            title="Replay Balloon Float Animation"
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/20 text-zinc-400 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-90 ml-1 border border-white/10"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );
